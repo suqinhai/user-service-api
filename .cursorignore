@@ -1,0 +1,97 @@
+# 依赖和构建文件
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# 日志文件
+logs/
+*.log
+*.log.*
+
+# 环境变量文件（保护敏感信息）
+.env
+.env.local
+.env.*.local
+
+# 临时文件
+tmp/
+temp/
+.tmp/
+
+# 操作系统文件
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE和编辑器文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 测试覆盖率报告
+coverage/
+.nyc_output/
+
+# 构建输出
+dist/
+build/
+
+# 缓存文件
+.cache/
+.parcel-cache/
+
+# 数据库文件
+*.sqlite
+*.sqlite3
+*.db
+
+# 备份文件
+*.bak
+*.backup
+
+# 压缩文件
+*.zip
+*.tar.gz
+*.rar
+
+# 文档生成文件
+docs/generated/
+
+# 特定于项目的忽略
+# 忽略敏感的配置文件
+env/
+!env/.env.example
+
+# 忽略上传的文件
+uploads/
+public/uploads/
+
+# 忽略生成的API文档
+api-docs/
+
+# 忽略性能分析文件
+*.cpuprofile
+*.heapprofile
+
+# 忽略Docker相关文件（如果不需要AI分析）
+# Dockerfile
+# docker-compose*.yml
+
+# 忽略脚本生成的文件
+scripts/generated/
+
+# 忽留测试数据文件
+test-data/
+fixtures/
+
+# 忽略第三方库文档
+vendor/

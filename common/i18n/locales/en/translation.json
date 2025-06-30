@@ -1,0 +1,18 @@
+{
+  "操作成功": "Operation successful",
+  "操作失败": "Operation failed",
+  "参数错误": "Invalid parameters",
+  "未授权访问": "Unauthorized access",
+  "资源不存在": "Resource not found",
+  "服务器错误": "Server error",
+  "登录成功": "Login successful",
+  "用户名或密码错误": "Invalid username or password",
+  "用户名和密码不能为空": "Username and password cannot be empty",
+  "注册成功": "Registration successful",
+  "更新成功": "Update successful",
+  "获取成功": "Retrieved successfully",
+  "字段不能为空": "{{field}} cannot be empty",
+  "字段格式无效": "{{field}} format is invalid",
+  "字段太短": "{{field}} is too short, minimum {{min}} characters required",
+  "字段太长": "{{field}} is too long, maximum {{max}} characters allowed"
+} 

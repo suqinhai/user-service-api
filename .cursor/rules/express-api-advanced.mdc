@@ -1,0 +1,322 @@
+---
+description: Express API项目高级配置和最佳实践
+globs: ["controllers/**/*.js", "services/**/*.js", "models/**/*.js", "middleware/**/*.js", "routes/**/*.js"]
+alwaysApply: true
+---
+
+# Express API 高级配置
+
+## 架构模式
+
+### MVC架构实现
+- Controller: 控制器层，处理HTTP请求和响应
+- Service: 业务逻辑层，包含核心业务处理
+- Model: 数据模型层，定义数据结构和数据库操作
+- Middleware: 中间件，包含认证、验证、错误处理等
+- Routes: 路由定义，组织API端点
+- Common: 公共工具和配置
+
+### 分层架构
+```
+Routes (路由层) -> Controllers (控制器层) -> Services (业务逻辑层) -> Models (数据访问层)
+```
+
+### 依赖注入模式
+- 服务之间通过依赖注入解耦
+- 便于单元测试和模块替换
+- 提高代码可维护性
+
+## 错误处理策略
+
+### 统一错误处理中间件
+```javascript
+// 错误处理中间件示例
+const errorHandler = (err, req, res, next) => {
+    logger.error('API错误', {
+        error: err.message,
+        stack: err.stack,
+        url: req.url,
+        method: req.method,
+        ip: req.ip
+    });
+
+    // 根据错误类型返回不同响应
+    if (err.name === 'ValidationError') {
+        return res.status(400).json({
+            success: 0,
+            message: '数据验证失败',
+            code: 'VALIDATION_ERROR',
+            details: err.details
+        });
+    }
+
+    // 默认服务器错误
+    res.status(500).json({
+        success: 0,
+        message: '服务器内部错误',
+        code: 'INTERNAL_ERROR'
+    });
+};
+```
+
+### 自定义错误类
+```javascript
+class APIError extends Error {
+    constructor(message, statusCode = 500, code = 'INTERNAL_ERROR') {
+        super(message);
+        this.statusCode = statusCode;
+        this.code = code;
+        this.name = 'APIError';
+    }
+}
+
+class ValidationError extends APIError {
+    constructor(message, details = []) {
+        super(message, 400, 'VALIDATION_ERROR');
+        this.details = details;
+        this.name = 'ValidationError';
+    }
+}
+```
+
+## 数据验证和清理
+
+### 输入验证中间件
+```javascript
+const { body, param, query } = require('express-validator');
+
+// 用户创建验证
+const validateUserCreation = [
+    body('email').isEmail().normalizeEmail(),
+    body('password').isLength({ min: 8 }).matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/),
+    body('name').trim().isLength({ min: 2, max: 50 }),
+    body('phone').optional().isMobilePhone('zh-CN')
+];
+```
+
+### 数据清理
+- 移除HTML标签防止XSS
+- 标准化邮箱格式
+- 清理多余空格
+- 数据类型转换
+
+## 安全最佳实践
+
+### 认证和授权
+```javascript
+// JWT认证中间件
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+        return res.status(401).json({
+            success: 0,
+            message: '访问令牌缺失',
+            code: 'TOKEN_MISSING'
+        });
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        if (err) {
+            return res.status(403).json({
+                success: 0,
+                message: '访问令牌无效',
+                code: 'TOKEN_INVALID'
+            });
+        }
+        req.user = user;
+        next();
+    });
+};
+```
+
+### 权限控制
+```javascript
+const requireRole = (roles) => {
+    return (req, res, next) => {
+        if (!req.user || !roles.includes(req.user.role)) {
+            return res.status(403).json({
+                success: 0,
+                message: '权限不足',
+                code: 'INSUFFICIENT_PERMISSIONS'
+            });
+        }
+        next();
+    };
+};
+```
+
+## 性能优化
+
+### 数据库查询优化
+- 使用索引优化查询
+- 避免N+1查询问题
+- 实现查询结果缓存
+- 数据库连接池配置
+
+### API响应优化
+- 实现分页机制
+- 字段选择性返回
+- 响应数据压缩
+- 缓存策略实现
+
+### 内存管理
+- 避免内存泄漏
+- 合理使用缓存
+- 及时释放资源
+- 监控内存使用
+
+## 日志和监控
+
+### 结构化日志
+```javascript
+const logger = require('winston');
+
+// 请求日志中间件
+const requestLogger = (req, res, next) => {
+    const start = Date.now();
+    
+    res.on('finish', () => {
+        const duration = Date.now() - start;
+        logger.info('API请求', {
+            method: req.method,
+            url: req.url,
+            statusCode: res.statusCode,
+            duration: `${duration}ms`,
+            userAgent: req.get('User-Agent'),
+            ip: req.ip
+        });
+    });
+    
+    next();
+};
+```
+
+### 性能监控
+- API响应时间监控
+- 数据库查询性能
+- 内存和CPU使用率
+- 错误率统计
+
+## 测试策略
+
+### 单元测试
+```javascript
+describe('UserService', () => {
+    describe('createUser', () => {
+        it('应该成功创建用户', async () => {
+            const userData = {
+                email: 'test@example.com',
+                password: 'Password123',
+                name: '测试用户'
+            };
+
+            const result = await userService.createUser(userData);
+            
+            expect(result).toHaveProperty('id');
+            expect(result.email).toBe(userData.email);
+            expect(result.password).toBeUndefined(); // 密码不应返回
+        });
+    });
+});
+```
+
+### 集成测试
+```javascript
+describe('POST /api/users', () => {
+    it('应该创建新用户', async () => {
+        const response = await request(app)
+            .post('/api/users')
+            .send({
+                email: 'test@example.com',
+                password: 'Password123',
+                name: '测试用户'
+            })
+            .expect(201);
+
+        expect(response.body.success).toBe(true);
+        expect(response.body.data).toHaveProperty('id');
+    });
+});
+```
+
+## 部署和运维
+
+### 环境配置
+- 开发、测试、生产环境分离
+- 敏感信息环境变量化
+- 配置验证和默认值
+
+### 健康检查
+```javascript
+// 健康检查端点
+app.get('/health', async (req, res) => {
+    try {
+        // 检查数据库连接
+        await sequelize.authenticate();
+        
+        // 检查Redis连接
+        await redis.ping();
+        
+        res.json({
+            status: 'healthy',
+            timestamp: new Date().toISOString(),
+            services: {
+                database: 'connected',
+                redis: 'connected'
+            }
+        });
+    } catch (error) {
+        res.status(503).json({
+            status: 'unhealthy',
+            error: error.message
+        });
+    }
+});
+```
+
+### 优雅关闭
+```javascript
+process.on('SIGTERM', async () => {
+    logger.info('收到SIGTERM信号，开始优雅关闭');
+    
+    // 停止接受新请求
+    server.close(() => {
+        logger.info('HTTP服务器已关闭');
+    });
+    
+    // 关闭数据库连接
+    await sequelize.close();
+    
+    // 关闭Redis连接
+    await redis.quit();
+    
+    process.exit(0);
+});
+```
+
+## AI助手特定指导
+
+### 代码生成原则
+1. 始终包含完整的错误处理
+2. 遵循项目的响应格式标准
+3. 添加适当的日志记录
+4. 考虑安全性和性能
+5. 包含必要的验证逻辑
+6. 不需要测试用例代码
+7. 生成的.py文件你都放在C:\Users\46745\Desktop\project\pyFiles,需要生成.py文件你也在这目录找
+
+### 重构建议
+1. 识别代码重复并提取公共函数
+2. 优化数据库查询性能
+3. 改进错误处理机制
+4. 增强代码可测试性
+5. 提高代码可读性
+
+### 问题诊断
+1. 分析错误日志定位问题
+2. 检查数据库查询性能
+3. 验证API响应格式
+4. 确认安全配置正确性
+5. 评估代码质量和最佳实践遵循情况

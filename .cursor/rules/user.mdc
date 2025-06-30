@@ -1,0 +1,210 @@
+---
+description: Express API项目的Augment Code规则配置
+globs: ["**/*.js", "**/*.json", "**/*.md", "**/*.yml", "**/*.yaml"]
+alwaysApply: true
+---
+
+# Express API项目 - Augment Code规则
+
+## 项目概述
+这是一个基于Express.js的后端API项目。
+
+## 编码规范
+
+### JavaScript代码规范
+- 使用ES6+语法特性
+- 采用驼峰命名法（camelCase）
+- 函数和变量名要有意义且描述性强
+- 使用const和let，避免使用var
+- 异步操作优先使用async/await而不是Promise.then()
+- 错误处理必须完整，包含try-catch块
+- 每步代码都写上注释
+
+### 文件结构规范
+- controllers/: 控制器层，处理HTTP请求和响应
+- services/: 业务逻辑层，包含核心业务处理
+- models/: 数据模型层，定义数据结构和数据库操作
+- middleware/: 中间件，包含认证、验证、错误处理等
+- routes/: 路由定义，组织API端点
+- common/: 公共工具和配置
+
+### API设计规范
+- RESTful API设计原则
+- 字段不要使用boolean类型,用0和1代替,和不要使用枚举使用数字代替
+- 统一的响应格式：{ success: 0 || 1, data: any, message: string, code: number }
+- 适当的HTTP状态码使用
+- API版本控制考虑
+- 完整的错误处理和用户友好的错误消息
+
+### 数据库操作规范
+- 使用Sequelize ORM或进行数据库操作
+- 事务处理要完整
+- 数据验证在模型层和控制器层都要进行
+- 敏感数据要加密存储
+- 数据库连接池配置要合理
+
+### 安全规范
+- 输入验证和清理
+- SQL注入防护
+- XSS攻击防护
+- 认证和授权机制
+- 敏感信息不能硬编码
+- 使用环境变量管理配置
+
+### 日志规范
+- 使用Winston进行日志记录
+- 不同级别的日志：error, warn, info, debug
+- 敏感信息不能记录到日志中
+- 日志格式要统一和结构化
+
+### 测试规范
+- 单元测试覆盖核心业务逻辑
+- 使用Jest测试框架
+- API集成测试
+- 测试数据要独立，不影响生产数据
+- 测试完要把测试代码、数据删除
+
+## AI助手行为指导
+
+### 代码生成要求
+- 生成的代码必须符合项目现有的架构模式
+- 包含完整的错误处理
+- 添加适当的中文注释
+- 遵循项目的命名约定
+- 考虑性能和安全性
+- 不需要生成测试用例代码
+- 备份完的文件不需要了要删除
+- 生成的.py文件你都放在C:\Users\46745\Desktop\project\pyFiles,需要生成.py文件你也在这目录找
+
+### 代码修改要求
+- 修改前先理解现有代码的上下文
+- 保持代码风格一致性
+- 不要破坏现有功能
+- 添加必要的测试用例
+- 备份完的文件不需要了要删除
+- 更新相关文档
+
+### 问题解决方式
+- 优先使用项目已有的工具和库
+- 考虑代码的可维护性和可扩展性
+- 提供多种解决方案供选择
+- 解释技术决策的原因
+
+### 禁止行为
+- 不要修改package.json中的核心依赖版本
+- 不要删除现有的中间件和安全配置
+- 不要硬编码敏感信息
+- 不要忽略错误处理
+- 不要破坏现有的API接口
+- 尽量不使用枚举和boolean,使用number替代
+
+## 项目特定配置
+
+### 环境变量
+项目使用多环境配置：
+- dev.env: 开发环境
+- test.env: 测试环境
+- pro.env: 生产服务器环境
+
+### 数据库配置
+- 合理使用MySQL或mango数据库
+- Sequelize ORM 或 mongoose
+- 连接池配置已优化
+- 支持事务处理
+
+## 代码示例模板
+
+### 控制器模板
+```javascript
+const { validationResult } = require('express-validator');
+const logger = require('../common/logger');
+
+class ExampleController {
+    /**
+     * 示例方法
+     * @param {Object} req - 请求对象
+     * @param {Object} res - 响应对象
+     */
+    async exampleMethod(req, res) {
+        try {
+            // 验证输入
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({
+                    success: 0,
+                    message: '输入验证失败',
+                    data: errors.array(),
+                    code: 400
+                });
+            }
+
+            // 业务逻辑处理
+            const result = await this.exampleService.process(req.body);
+
+            // 返回成功响应
+            res.json({
+                success: 1,
+                message: '操作成功',
+                data: result,
+                code: 200
+            });
+
+        } catch (error) {
+            logger.error('示例方法执行失败', error);
+            res.status(500).json({
+                success: 0,
+                message: '服务器内部错误',
+                data: null,
+                code: 500
+            });
+        }
+    }
+}
+
+module.exports = new ExampleController();
+```
+
+### 服务层模板
+```javascript
+const logger = require('../common/logger');
+
+class ExampleService {
+    /**
+     * 业务处理方法
+     * @param {Object} data - 输入数据
+     * @returns {Promise<Object>} 处理结果
+     */
+    async process(data) {
+        try {
+            // 数据验证
+            this.validateData(data);
+
+            // 业务逻辑处理
+            const result = await this.performBusinessLogic(data);
+
+            logger.info('业务处理完成', { data: result });
+            return result;
+
+        } catch (error) {
+            logger.error('业务处理失败', error);
+            throw error;
+        }
+    }
+
+    validateData(data) {
+        if (!data) {
+            throw new Error('数据不能为空');
+        }
+        // 其他验证逻辑
+    }
+
+    async performBusinessLogic(data) {
+        // 具体业务逻辑实现
+        return data;
+    }
+}
+
+module.exports = new ExampleService();
+```
+
+这些规则将帮助AI助手更好地理解项目结构和要求，生成符合项目标准的代码。
