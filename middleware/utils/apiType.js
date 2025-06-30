@@ -94,15 +94,23 @@ function validateUserTypeForApi(user, apiType) {
     case API_TYPES.USER:
       // 用户端API：普通用户和管理员都可以访问
       return ['user', 'admin', 'super_admin'].includes(user.role);
-    
+
     case API_TYPES.ADMIN:
       // 管理端API：只有管理员可以访问
       return ['admin', 'super_admin'].includes(user.role);
-    
+
+    case API_TYPES.MERCHANT:
+      // 商户端API：只有商户用户可以访问
+      return ['merchant'].includes(user.role);
+
+    case API_TYPES.CONSOLE:
+      // 总台API：只有总台管理员可以访问
+      return user.role === 4; // CONSOLE_ADMIN
+
     case API_TYPES.GENERAL:
       // 通用API：所有用户都可以访问
       return true;
-    
+
     default:
       return false;
   }
@@ -118,6 +126,20 @@ const userApiType = createApiTypeMiddleware(API_TYPES.USER);
  */
 const adminApiType = createApiTypeMiddleware(API_TYPES.ADMIN, {
   validateUserType: true // 管理端API启用用户类型验证
+});
+
+/**
+ * 商户端API类型标识中间件
+ */
+const merchantApiType = createApiTypeMiddleware(API_TYPES.MERCHANT, {
+  validateUserType: true // 商户端API启用用户类型验证
+});
+
+/**
+ * 总台API类型标识中间件
+ */
+const consoleApiType = createApiTypeMiddleware(API_TYPES.CONSOLE, {
+  validateUserType: true // 总台API启用用户类型验证
 });
 
 /**
@@ -163,6 +185,24 @@ function isAdminApi(req) {
 }
 
 /**
+ * 检查是否为商户端API
+ * @param {Object} req - Express请求对象
+ * @returns {boolean} 是否为商户端API
+ */
+function isMerchantApi(req) {
+  return isApiType(req, API_TYPES.MERCHANT);
+}
+
+/**
+ * 检查是否为总台API
+ * @param {Object} req - Express请求对象
+ * @returns {boolean} 是否为总台API
+ */
+function isConsoleApi(req) {
+  return isApiType(req, API_TYPES.CONSOLE);
+}
+
+/**
  * 检查是否为通用API
  * @param {Object} req - Express请求对象
  * @returns {boolean} 是否为通用API
@@ -179,6 +219,14 @@ function isGeneralApi(req) {
 function detectApiTypeFromPath(path) {
   const normalizedPath = path.toLowerCase();
   
+  // 总台路径模式
+  const consolePatterns = [
+    /^\/api\/admin\/console\//,
+    /^\/api\/console\//,
+    /^\/console\//,
+    /^\/api\/v\d+\/console\//
+  ];
+
   // 管理端路径模式
   const adminPatterns = [
     /^\/api\/admin\//,
@@ -187,7 +235,14 @@ function detectApiTypeFromPath(path) {
     /^\/management\//,
     /^\/api\/management\//
   ];
-  
+
+  // 商户端路径模式
+  const merchantPatterns = [
+    /^\/api\/merchant\//,
+    /^\/merchant\//,
+    /^\/api\/v\d+\/merchant\//
+  ];
+
   // 用户端路径模式
   const userPatterns = [
     /^\/api\/user\//,
@@ -197,16 +252,26 @@ function detectApiTypeFromPath(path) {
     /^\/api\/v\d+\/users\/settings/
   ];
   
+  // 检查总台模式（优先级最高）
+  if (consolePatterns.some(pattern => pattern.test(normalizedPath))) {
+    return API_TYPES.CONSOLE;
+  }
+
   // 检查管理端模式
   if (adminPatterns.some(pattern => pattern.test(normalizedPath))) {
     return API_TYPES.ADMIN;
   }
-  
+
+  // 检查商户端模式
+  if (merchantPatterns.some(pattern => pattern.test(normalizedPath))) {
+    return API_TYPES.MERCHANT;
+  }
+
   // 检查用户端模式
   if (userPatterns.some(pattern => pattern.test(normalizedPath))) {
     return API_TYPES.USER;
   }
-  
+
   // 默认为通用API
   return API_TYPES.GENERAL;
 }
@@ -241,6 +306,8 @@ function createAutoApiTypeMiddleware(options = {}) {
 const apiTypeStats = {
   [API_TYPES.USER]: 0,
   [API_TYPES.ADMIN]: 0,
+  [API_TYPES.MERCHANT]: 0,
+  [API_TYPES.CONSOLE]: 0,
   [API_TYPES.GENERAL]: 0
 };
 
@@ -281,11 +348,15 @@ module.exports = {
   createAutoApiTypeMiddleware,
   userApiType,
   adminApiType,
+  merchantApiType,
+  consoleApiType,
   generalApiType,
   getApiType,
   isApiType,
   isUserApi,
   isAdminApi,
+  isMerchantApi,
+  isConsoleApi,
   isGeneralApi,
   detectApiTypeFromPath,
   validateUserTypeForApi,

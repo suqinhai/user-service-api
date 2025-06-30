@@ -108,9 +108,10 @@ const API_TYPE_CONFIG = {
     USER: 'user',
     ADMIN: 'admin',
     MERCHANT: 'merchant',
+    CONSOLE: 'console',
     GENERAL: 'general'
   },
-  
+
   HEADERS: {
     USER: {
       'X-API-Type': 'user',
@@ -119,6 +120,14 @@ const API_TYPE_CONFIG = {
     ADMIN: {
       'X-API-Type': 'admin',
       'X-API-Audience': 'administrator'
+    },
+    MERCHANT: {
+      'X-API-Type': 'merchant',
+      'X-API-Audience': 'merchant'
+    },
+    CONSOLE: {
+      'X-API-Type': 'console',
+      'X-API-Audience': 'console-admin'
     },
     GENERAL: {
       'X-API-Type': 'general',

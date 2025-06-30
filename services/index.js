@@ -12,6 +12,8 @@ const UserProfileService = require('./user/UserProfileService');   // 用户资�
 // 引入管理端服务：处理面向管理员的业务逻辑
 const AdminUserService = require('./admin/AdminUserService');       // 管理端用户管理服务
 const AdminSystemService = require('./admin/AdminSystemService');   // 管理端系统管理服务
+const ConsoleAuthService = require('./admin/ConsoleAuthService');   // 总台认证服务
+const ConsoleLoginTracker = require('./admin/ConsoleLoginTracker'); // 总台登录跟踪服务
 
 // 引入商户端服务：处理面向商户用户的业务逻辑
 const MerchantAuthService = require('./merchant/MerchantAuthService');         // 商户认证服务
@@ -40,6 +42,8 @@ module.exports = {
   // 管理端服务：处理管理员相关的业务逻辑
   AdminUserService,     // 用户管理：用户CRUD、状态管理、权限分配
   AdminSystemService,   // 系统管理：系统监控、配置管理、日志处理
+  ConsoleAuthService,   // 总台认证：总台管理员登录验证、令牌管理
+  ConsoleLoginTracker,  // 总台登录跟踪：失败次数记录、锁定管理
 
   // 商户端服务：处理商户相关的业务逻辑
   MerchantAuthService,     // 商户认证：登录、注册、令牌管理、密码重置

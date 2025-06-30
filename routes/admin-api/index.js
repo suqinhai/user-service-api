@@ -28,10 +28,12 @@ router.use(adminApi);
 // 引入管理端子路由模块
 const usersRouter = require('./users');    // 用户管理路由
 const systemRouter = require('./system');  // 系统管理路由
+const consoleRouter = require('./console'); // 总台认证路由
 
 // 注册子路由到对应的路径
 router.use('/users', usersRouter);   // 注册用户管理路由，路径为/api/admin/users
 router.use('/system', systemRouter); // 注册系统管理路由，路径为/api/admin/system
+router.use('/console/auth', consoleRouter); // 注册总台认证路由，路径为/api/admin/console/auth
 
 // 导出路由器，供上级路由使用
 module.exports = router;
