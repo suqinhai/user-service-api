@@ -116,7 +116,7 @@ class ConsoleLoginTracker extends BaseService {
   async recordSuccessfulLogin(username, ip) {
     try {
       await this.clearLockAndFailCount(username);
-      this.logAction(`总台登录成功: ${username}, IP: ${ip}`);
+      // this.logAction(`总台登录成功: ${username}, IP: ${ip}`);
     } catch (error) {
       this.logError('清除总台登录失败计数失败', error);
       // 登录成功时清除失败不应该影响登录流程

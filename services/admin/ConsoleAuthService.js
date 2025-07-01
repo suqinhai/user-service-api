@@ -80,8 +80,6 @@ class ConsoleAuthService extends BaseService {
         email: user.email,
         role: user.role,
         status: user.status,
-        created_at: user.created_at,
-        updated_at: user.updated_at,
         last_login: user.last_login,
       };
 
@@ -90,7 +88,6 @@ class ConsoleAuthService extends BaseService {
       return {
         user: userInfo,
         tokens,
-        loginTime: new Date().toISOString()
       };
 
     } catch (error) {
