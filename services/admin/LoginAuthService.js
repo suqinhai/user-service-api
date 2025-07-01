@@ -4,7 +4,7 @@
  */
 
 const BaseService = require('../base/BaseService');
-const ConsoleLoginTracker = require('./ConsoleLoginTracker');
+const ConsoleLoginTracker = require('./LoginAuthUtils');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { Op } = require('sequelize');

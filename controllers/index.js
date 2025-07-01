@@ -9,9 +9,11 @@ const UserAuthController = require('./user/UserAuthController');         // 用�
 const UserProfileController = require('./user/UserProfileController');   // 用户资料控制器
 
 // 引入管理端控制器：处理面向管理员的业务逻辑
-const AdminUserController = require('./admin/AdminUserController');       // 管理端用户管理控制器
-const AdminSystemController = require('./admin/AdminSystemController');   // 管理端系统管理控制器
-const ConsoleAuthController = require('./admin/ConsoleAuthController');   // 总台认证控制器
+// const AdminUserController = require('./admin/AdminUserController');       // 管理端用户管理控制器
+// const AdminSystemController = require('./admin/AdminSystemController');   // 管理端系统管理控制器
+// const ConsoleAuthController = require('./admin/ConsoleAuthController');   // 总台认证控制器
+const LoginAuthController = require('./admin/LoginAuthController');   // 总台登录控制器
+
 
 // 引入商户端控制器：处理面向商户用户的业务逻辑
 const MerchantAuthController = require('./merchant/MerchantAuthController');         // 商户认证控制器
@@ -33,9 +35,10 @@ module.exports = {
   UserProfileController,   // 用户资料：个人信息管理、头像上传
 
   // 管理端控制器：处理管理员相关的HTTP请求
-  AdminUserController,     // 用户管理：用户CRUD、状态管理、权限控制
-  AdminSystemController,   // 系统管理：系统信息、日志、配置、性能监控
-  ConsoleAuthController,   // 总台认证：总台管理员登录、令牌管理、状态查询
+  // AdminUserController,     // 用户管理：用户CRUD、状态管理、权限控制
+  // AdminSystemController,   // 系统管理：系统信息、日志、配置、性能监控
+  // ConsoleAuthController,   // 总台认证：总台管理员登录、令牌管理、状态查询
+  LoginAuthController,
 
   // 商户端控制器：处理商户相关的HTTP请求
   MerchantAuthController,     // 商户认证：登录、注册、令牌管理
