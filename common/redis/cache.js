@@ -94,7 +94,7 @@ class CacheManager {
    * @param {string} id - 唯一标识符
    * @returns {Promise<boolean>} 是否成功删除缓存
    */
-  static async delete(type, id) {
+  static async del(type, id) {
     const key = generateKey(type, id);
     const startTime = Date.now();
 
