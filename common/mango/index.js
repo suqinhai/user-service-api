@@ -35,7 +35,7 @@ const config = {
         bufferCommands: false,      // 禁用mongoose缓冲
         // bufferMaxEntries 在新版本中已被移除, 已经被废弃
         // useNewUrlParser: true,      // 使用新的URL解析器
-        useUnifiedTopology: true,   // 使用新的服务器发现和监控引擎
+        // useUnifiedTopology: true,   // 使用新的服务器发现和监控引擎
 
         // 认证配置将在连接时动态添加
     }
@@ -71,12 +71,12 @@ async function connectMongoDB() {
     try {
         const connectionUri = buildConnectionUri();
 
-        logger.info('正在连接 MongoDB 数据库...', {
-            category: 'MONGODB',
-            host: config.host,
-            port: config.port,
-            database: config.dbName
-        });
+        // logger.info('正在连接 MongoDB 数据库...', {
+        //     category: 'MONGODB',
+        //     host: config.host,
+        //     port: config.port,
+        //     database: config.dbName
+        // });
 
         // 动态构建连接选项，包含认证配置
         const connectionOptions = {
@@ -94,12 +94,12 @@ async function connectMongoDB() {
         // 建立连接
         mongoConnection = await mongoose.connect(connectionUri, connectionOptions);
 
-        logger.info('成功连接到 MongoDB 数据库!', {
-            category: 'MONGODB',
-            host: config.host,
-            port: config.port,
-            database: config.dbName
-        });
+        // logger.info('成功连接到 MongoDB 数据库!', {
+        //     category: 'MONGODB',
+        //     host: config.host,
+        //     port: config.port,
+        //     database: config.dbName
+        // });
 
         return mongoConnection;
 
@@ -205,17 +205,17 @@ function createSafeMongoOperations() {
 }
 
 // 添加连接事件监听器
-mongoose.connection.on('connected', () => {
-    logger.info('Mongoose 连接已建立', { category: 'MONGODB' });
-});
+// mongoose.connection.on('connected', () => {
+//     logger.info('Mongoose 连接已建立', { category: 'MONGODB' });
+// });
 
-mongoose.connection.on('error', (err) => {
-    logger.error('Mongoose 连接错误:', { category: 'MONGODB', error: err.message });
-});
+// mongoose.connection.on('error', (err) => {
+//     logger.error('Mongoose 连接错误:', { category: 'MONGODB', error: err.message });
+// });
 
-mongoose.connection.on('disconnected', () => {
-    logger.warn('Mongoose 连接已断开', { category: 'MONGODB' });
-});
+// mongoose.connection.on('disconnected', () => {
+//     logger.warn('Mongoose 连接已断开', { category: 'MONGODB' });
+// });
 
 // 处理应用终止
 process.on('SIGINT', async () => {

@@ -33,19 +33,19 @@ const config = {
 const redis = new Redis(config);
 
 // 连接成功事件
-redis.on('connect', () => {
-  console.log('成功连接到 Redis 服务器');
-});
+// redis.on('connect', () => {
+//   console.log('成功连接到 Redis 服务器');
+// });
 
-// 连接错误事件
-redis.on('error', (err) => {
-  console.error('Redis 连接错误:', err);
-});
+// // 连接错误事件
+// redis.on('error', (err) => {
+//   console.error('Redis 连接错误:', err);
+// });
 
-// 重新连接事件
-redis.on('reconnecting', () => {
-  console.log('正在尝试重新连接到 Redis...');
-});
+// // 重新连接事件
+// redis.on('reconnecting', () => {
+//   console.log('正在尝试重新连接到 Redis...');
+// });
 
 // 定义默认缓存时间（秒）
 const TTL = {

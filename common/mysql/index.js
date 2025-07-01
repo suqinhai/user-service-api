@@ -28,10 +28,10 @@ const config = {
         validate: async (connection) => {
             try {
                 // 验证连接是否有效
-                await connection.query('SELECT 1');
+                // await connection.query('SELECT 1');
                 return true;
             } catch (err) {
-                logger.error('数据库连接验证失败', err);
+                // logger.error('数据库连接验证失败', err);
                 return false;
             }
         }
@@ -44,13 +44,7 @@ const config = {
         paranoid: false     // 软删除功能，设为true时会增加deletedAt字段
     },
     // 日志配置
-    logging: process.env.NODE_ENV === 'dev' 
-        ? (sql, timing) => logger.debug(sql, { 
-            category: 'DATABASE', 
-            duration: timing,
-            query: sql.substr(0, 500) // 避免过长日志
-          }) 
-        : false,
+    logging: false,
     // 查询选项
     query: {
         raw: false,         // 默认不使用原始查询结果
@@ -70,7 +64,7 @@ const config = {
         // 处理时区问题
         timezone: '+08:00',
         // 启用连接保持
-        keepAlive: true,
+        // keepAlive: true,
         // 连接超时
         connectTimeout: parseInt(process.env.DB_CONNECT_TIMEOUT) || 60000,
         // 支持大数字
@@ -91,7 +85,8 @@ async function connection() {
     try {
         // 测试连接
         await sequelize.authenticate();
-        logger.info('成功连接到 MySQL 数据库!', { category: 'DATABASE' });
+        console.log('mysql connection initialized successfully')
+        // logger.info('成功连接到 MySQL 数据库!', { category: 'DATABASE' });
     } catch (error) {
         logger.error('MySQL 连接失败:', { category: 'DATABASE', error });
         
@@ -103,14 +98,14 @@ async function connection() {
     }
 }
 
-// 添加全局事件监听器
-sequelize.addHook('beforeConnect', (config) => {
-    logger.debug('正在尝试连接数据库...', { category: 'DATABASE', host: config.host });
-});
+// // 添加全局事件监听器
+// sequelize.addHook('beforeConnect', (config) => {
+//     logger.debug('正在尝试连接数据库...', { category: 'DATABASE', host: config.host });
+// });
 
-sequelize.addHook('afterConnect', (connection, config) => {
-    logger.debug('数据库连接成功', { category: 'DATABASE', host: config.host });
-});
+// sequelize.addHook('afterConnect', (connection, config) => {
+//     logger.debug('数据库连接成功', { category: 'DATABASE', host: config.host });
+// });
 
 // 执行连接
 connection();
