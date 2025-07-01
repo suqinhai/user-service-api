@@ -40,12 +40,8 @@ class ConsoleAuthController extends BaseController {
 
       // 返回成功响应
       return this.sendSuccess(res, '总台登录成功', {
-        user: result.user,
+        userInfo: result.user,
         token: result.tokens.accessToken,
-        refreshToken: result.tokens.refreshToken,
-        expiresIn: result.tokens.expiresIn,
-        tokenType: result.tokens.tokenType,
-        loginTime: result.loginTime
       });
 
     } catch (error) {

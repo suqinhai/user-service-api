@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const { USER_ROLE, USER_STATUS } = require('../../common/constants/status');
+const moment = require('moment');
 
 module.exports = (sequelize) => {
   const MerchantsUsers = sequelize.define('MerchantsUsers', {
@@ -36,15 +37,27 @@ module.exports = (sequelize) => {
       comment: '用户状态(0:未激活,1:已激活,2:已暂停,3:已封禁,4:已删除)'
     },
     last_login: {
-      type: DataTypes.DATE
+      type: DataTypes.DATE,
+      get() {
+        const rawValue = this.getDataValue('last_login');
+        return moment(rawValue).format('YYYY-MM-DD HH:mm:ss');
+      }
     },
     created_at: {
       type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW
+      defaultValue: DataTypes.NOW,
+      get() {
+        const rawValue = this.getDataValue('created_at');
+        return moment(rawValue).format('YYYY-MM-DD HH:mm:ss');
+      }
     },
     updated_at: {
       type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW
+      defaultValue: DataTypes.NOW,
+      get() {
+        const rawValue = this.getDataValue('updated_at');
+        return moment(rawValue).format('YYYY-MM-DD HH:mm:ss');
+      }
     }
   }, {
     tableName: 'merchants_users',
