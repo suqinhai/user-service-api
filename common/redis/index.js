@@ -33,9 +33,9 @@ const config = {
 const redis = new Redis(config);
 
 // 连接成功事件
-// redis.on('connect', () => {
-//   console.log('成功连接到 Redis 服务器');
-// });
+redis.on('connect', () => {
+  console.log('Redis connection initialized successfully');
+});
 
 // // 连接错误事件
 // redis.on('error', (err) => {
