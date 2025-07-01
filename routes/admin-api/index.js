@@ -20,7 +20,7 @@ router.get('/', function(req, res) {
 });
 
 // 引入总台认证路由模块（需要在认证中间件之前注册，因为登录接口本身不需要认证）
-const loginRouter = require('./require_auth/login'); // 总台认证路由
+const loginRouter = require('./no_require_auth/login'); // 总台认证路由
 
 // 注册总台认证路由，路径为/api/admin/auth（无需认证的公开路由）
 router.use('/auth', loginRouter);
