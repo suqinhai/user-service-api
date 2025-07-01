@@ -83,7 +83,7 @@ class ConsoleAuthService extends BaseService {
         last_login: user.last_login,
       };
 
-      this.logAction(`总台登录成功: ${username}, ID: ${user.id}, IP: ${ip}`);
+      // this.logAction(`总台登录成功: ${username}, ID: ${user.id}, IP: ${ip}`);
 
       return {
         user: userInfo,

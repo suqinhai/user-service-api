@@ -27,8 +27,8 @@ class CacheManager {
 
       if (!data) {
         // 记录缓存未命中日志
-        const duration = Date.now() - startTime;
-        logger.logCachePerformance('GET', duration, key, false);
+        // const duration = Date.now() - startTime;
+        // logger.logCachePerformance('GET', duration, key, false);
         return null;
       }
 
