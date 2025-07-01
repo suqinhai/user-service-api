@@ -2,7 +2,7 @@ const { DataTypes } = require('sequelize');
 const { USER_ROLE, USER_STATUS } = require('../../common/constants/status');
 
 module.exports = (sequelize) => {
-  const MerchantUser = sequelize.define('MerchantUser', {
+  const MerchantsUsers = sequelize.define('MerchantsUsers', {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
@@ -51,5 +51,5 @@ module.exports = (sequelize) => {
     timestamps: false
   });
 
-  return MerchantUser;
+  return MerchantsUsers;
 }; 

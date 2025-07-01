@@ -39,8 +39,8 @@ class ConsoleAuthService extends BaseService {
       }
 
       // 2. 查找总台管理员用户
-      const User = sequelize.models.merchantUserModel;
-      const user = await User.findOne({
+      const MerchantsUsers = sequelize.models.MerchantsUsers;
+      const user = await MerchantsUsers.findOne({
         where: {
           username,
           role: USER_ROLE.CONSOLE_ADMIN, // 只允许总台管理员角色登录
