@@ -36,8 +36,8 @@ class CacheManager {
       const result = JSON.parse(data);
 
       // 记录缓存命中日志
-      const duration = Date.now() - startTime;
-      logger.logCachePerformance('GET', duration, key, true);
+      // const duration = Date.now() - startTime;
+      // logger.logCachePerformance('GET', duration, key, true);
 
       return result;
     } catch (error) {
@@ -74,8 +74,8 @@ class CacheManager {
       await redis.set(key, value, 'EX', ttl);
 
       // 记录缓存设置日志
-      const duration = Date.now() - startTime;
-      logger.logCachePerformance('SET', duration, key);
+      // const duration = Date.now() - startTime;
+      // logger.logCachePerformance('SET', duration, key);
 
       return true;
     } catch (error) {
@@ -102,8 +102,8 @@ class CacheManager {
       await redis.del(key);
 
       // 记录缓存删除日志
-      const duration = Date.now() - startTime;
-      logger.logCachePerformance('DEL', duration, key);
+      // const duration = Date.now() - startTime;
+      // logger.logCachePerformance('DEL', duration, key);
 
       return true;
     } catch (error) {
@@ -130,8 +130,8 @@ class CacheManager {
 
       if (keys.length === 0) {
         // 记录缓存清除日志
-        const duration = Date.now() - startTime;
-        logger.logCachePerformance('CLEAR', duration, type);
+        // const duration = Date.now() - startTime;
+        // logger.logCachePerformance('CLEAR', duration, type);
         return true;
       }
 
@@ -139,9 +139,9 @@ class CacheManager {
       await redis.del(keys);
 
       // 记录缓存清除日志
-      const duration = Date.now() - startTime;
-      logger.log(logger.LOG_LEVELS.INFO, LOG_CATEGORIES.CACHE, `清除缓存类型: ${type}, 删除了 ${keys.length} 个键`);
-      logger.logCachePerformance('CLEAR', duration, type);
+      // const duration = Date.now() - startTime;
+      // logger.log(logger.LOG_LEVELS.INFO, LOG_CATEGORIES.CACHE, `清除缓存类型: ${type}, 删除了 ${keys.length} 个键`);
+      // logger.logCachePerformance('CLEAR', duration, type);
 
       return true;
     } catch (error) {
@@ -178,7 +178,7 @@ class CacheManager {
       }
 
       // 记录缓存未命中
-      logger.log(logger.LOG_LEVELS.DEBUG, LOG_CATEGORIES.CACHE, `缓存未命中: ${key}`);
+      // logger.log(logger.LOG_LEVELS.DEBUG, LOG_CATEGORIES.CACHE, `缓存未命中: ${key}`);
 
       // 记录数据源获取开始时间
       const fetchStartTime = Date.now();
@@ -187,8 +187,8 @@ class CacheManager {
       const freshData = await fetchFunction();
 
       // 记录数据源获取时间
-      const fetchDuration = Date.now() - fetchStartTime;
-      logger.logDatabasePerformance('查询', fetchDuration, `缓存回退查询: ${key}`);
+      // const fetchDuration = Date.now() - fetchStartTime;
+      // logger.logDatabasePerformance('查询', fetchDuration, `缓存回退查询: ${key}`);
 
       // 缓存获取的数据（如果不为null或undefined）
       if (freshData != null) {
@@ -196,8 +196,8 @@ class CacheManager {
       }
 
       // 记录整体处理时间
-      const totalDuration = Date.now() - startTime;
-      logger.log(logger.LOG_LEVELS.DEBUG, LOG_CATEGORIES.CACHE, `缓存包装器处理: ${key}, 耗时: ${totalDuration}ms, 命中: ${hit}`);
+      // const totalDuration = Date.now() - startTime;
+      // logger.log(logger.LOG_LEVELS.DEBUG, LOG_CATEGORIES.CACHE, `缓存包装器处理: ${key}, 耗时: ${totalDuration}ms, 命中: ${hit}`);
 
       return freshData;
     } catch (error) {
@@ -241,14 +241,14 @@ class CacheManager {
       const cachedValues = await redis.mget(keys);
 
       // 记录缓存命中率
-      const hitCount = cachedValues.filter(val => val !== null && val !== undefined).length;
-      const hitRate = (hitCount / ids.length) * 100;
-      logger.log(
-        logger.LOG_LEVELS.DEBUG,
-        LOG_CATEGORIES.CACHE,
-        `批量缓存命中率: ${hitRate.toFixed(2)}% (${hitCount}/${ids.length})`,
-        { type, idsCount: ids.length }
-      );
+      // const hitCount = cachedValues.filter(val => val !== null && val !== undefined).length;
+      // const hitRate = (hitCount / ids.length) * 100;
+      // logger.log(
+      //   logger.LOG_LEVELS.DEBUG,
+      //   LOG_CATEGORIES.CACHE,
+      //   `批量缓存命中率: ${hitRate.toFixed(2)}% (${hitCount}/${ids.length})`,
+      //   { type, idsCount: ids.length }
+      // );
 
       // 处理缓存命中的情况
       ids.forEach((id, index) => {
@@ -273,8 +273,8 @@ class CacheManager {
         const fetchedData = await batchFetchFunction(missedIds);
 
         // 记录数据源获取时间
-        const fetchDuration = Date.now() - fetchStartTime;
-        logger.logDatabasePerformance('批量查询', fetchDuration, `缓存回退批量查询: ${type}`, { missedCount: missedIds.length });
+        // const fetchDuration = Date.now() - fetchStartTime;
+        // logger.logDatabasePerformance('批量查询', fetchDuration, `缓存回退批量查询: ${type}`, { missedCount: missedIds.length });
 
         // 将获取的数据添加到结果并缓存
         for (const id in fetchedData) {
@@ -287,12 +287,12 @@ class CacheManager {
       }
 
       // 记录整体处理时间
-      const totalDuration = Date.now() - startTime;
-      logger.log(
-        logger.LOG_LEVELS.DEBUG,
-        LOG_CATEGORIES.CACHE,
-        `批量缓存处理完成, 耗时: ${totalDuration}ms, 总数: ${ids.length}, 未命中: ${missedIds.length}`
-      );
+      // const totalDuration = Date.now() - startTime;
+      // logger.log(
+      //   logger.LOG_LEVELS.DEBUG,
+      //   LOG_CATEGORIES.CACHE,
+      //   `批量缓存处理完成, 耗时: ${totalDuration}ms, 总数: ${ids.length}, 未命中: ${missedIds.length}`
+      // );
 
       return result;
     } catch (error) {
@@ -327,8 +327,8 @@ class CacheManager {
       
       // 没有键时直接返回
       if (allKeys.length === 0) {
-        const duration = Date.now() - startTime;
-        logger.logCachePerformance('CLEAR_PATTERN', duration, `${type}:${pattern}`);
+        // const duration = Date.now() - startTime;
+        // logger.logCachePerformance('CLEAR_PATTERN', duration, `${type}:${pattern}`);
         return [];
       }
 
@@ -346,8 +346,8 @@ class CacheManager {
 
       // 如果没有匹配的键，直接返回
       if (keys.length === 0) {
-        const duration = Date.now() - startTime;
-        logger.logCachePerformance('CLEAR_PATTERN', duration, `${type}:${pattern}`);
+        // const duration = Date.now() - startTime;
+        // logger.logCachePerformance('CLEAR_PATTERN', duration, `${type}:${pattern}`);
         return [];
       }
 
@@ -355,14 +355,14 @@ class CacheManager {
       await redis.del(keys);
 
       // 记录缓存清除日志
-      const duration = Date.now() - startTime;
-      logger.log(
-        logger.LOG_LEVELS.INFO, 
-        LOG_CATEGORIES.CACHE, 
-        `按模式清除缓存: ${type}:${pattern}, 删除了 ${keys.length} 个键`,
-        { matchedKeys: keys.length, totalKeys: allKeys.length }
-      );
-      logger.logCachePerformance('CLEAR_PATTERN', duration, `${type}:${pattern}`);
+      // const duration = Date.now() - startTime;
+      // logger.log(
+      //   logger.LOG_LEVELS.INFO, 
+      //   LOG_CATEGORIES.CACHE, 
+      //   `按模式清除缓存: ${type}:${pattern}, 删除了 ${keys.length} 个键`,
+      //   { matchedKeys: keys.length, totalKeys: allKeys.length }
+      // );
+      // logger.logCachePerformance('CLEAR_PATTERN', duration, `${type}:${pattern}`);
 
       return keys;
     } catch (error) {
