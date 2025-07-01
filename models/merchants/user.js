@@ -26,9 +26,9 @@ module.exports = (sequelize) => {
     },
     role: {
       type: DataTypes.INTEGER,
-      defaultValue: USER_ROLE.USER,
+      defaultValue: USER_ROLE.MERCHANT,
       allowNull: false,
-      comment: '用户角色(0:普通用户,1:管理员,2:超级管理员,3:版主)'
+      comment: '用户角色(10:h5用户,20:商户,30:总台管理员)'
     },
     status: {
       type: DataTypes.INTEGER,

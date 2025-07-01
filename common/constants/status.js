@@ -35,9 +35,9 @@ const USER_STATUS = {
 
 // 用户角色常量
 const USER_ROLE = {
-  USER: 100,        // h5用户
-  MERCHANT: 200,    // 商户
-  CONSOLE_ADMIN: 300 // 总台管理员
+  USER: 10,        // h5用户
+  MERCHANT: 20,    // 商户
+  CONSOLE_ADMIN: 30 // 总台管理员
 };
 
 // 商户相关状态常量
