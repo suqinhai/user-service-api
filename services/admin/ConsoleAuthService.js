@@ -39,7 +39,7 @@ class ConsoleAuthService extends BaseService {
       }
 
       // 2. 查找总台管理员用户
-      const User = sequelize.models.User;
+      const User = sequelize.models.merchantUserModel;
       const user = await User.findOne({
         where: {
           username,
