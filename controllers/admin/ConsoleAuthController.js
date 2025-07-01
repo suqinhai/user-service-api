@@ -18,8 +18,7 @@ class ConsoleAuthController extends BaseController {
    */
   login = this.asyncHandler(async (req, res) => {
     try {
-      this.logAction('总台登录请求', req);
-
+      
       const { username, password } = req.body;
 
       // 验证必需参数

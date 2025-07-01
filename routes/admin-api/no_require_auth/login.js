@@ -15,14 +15,6 @@ const consoleAuthController = new ConsoleAuthController();
 /**
  * 总台登录路由
  * POST /api/admin/auth/login
- * 
- * 请求体参数:
- * - username: 总台管理员用户名
- * - password: 密码
- * 
- * 响应:
- * - 成功: 返回用户信息和JWT令牌
- * - 失败: 返回错误信息和剩余尝试次数
  */
 router.post('/login', consoleAuthController.login);
 

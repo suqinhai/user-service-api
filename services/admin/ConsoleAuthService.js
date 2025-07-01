@@ -30,7 +30,6 @@ class ConsoleAuthService extends BaseService {
    */
   async login(username, password, ip, sequelize) {
     try {
-      this.logAction(`总台登录尝试: ${username}, IP: ${ip}`);
 
       // 1. 检查账号是否被锁定
       const lockStatus = await this.loginTracker.checkLockStatus(username);
