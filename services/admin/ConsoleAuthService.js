@@ -83,8 +83,6 @@ class ConsoleAuthService extends BaseService {
         last_login: user.last_login,
       };
 
-      // this.logAction(`总台登录成功: ${username}, ID: ${user.id}, IP: ${ip}`);
-
       return {
         user: userInfo,
         tokens,
@@ -117,67 +115,6 @@ class ConsoleAuthService extends BaseService {
     } catch (error) {
       this.logError(`总台登出失败: ${user?.username}`, error);
       throw error;
-    }
-  }
-
-  /**
-   * 刷新总台令牌
-   * @param {string} refreshToken - 刷新令牌
-   * @returns {Promise<Object>} 新的令牌
-   */
-  async refreshToken(refreshToken) {
-    try {
-      // 验证刷新令牌
-      const decoded = jwt.verify(refreshToken, this.jwtSecret);
-      
-      if (decoded.type !== 'refresh') {
-        throw new Error('无效的刷新令牌类型');
-      }
-
-      if (decoded.role !== USER_ROLE.CONSOLE_ADMIN) {
-        throw new Error('无效的总台刷新令牌');
-      }
-
-      // 生成新的令牌对
-      const newTokens = await this.generateTokens({
-        id: decoded.id,
-        username: decoded.username,
-        email: decoded.email,
-        role: decoded.role
-      });
-
-      this.logAction(`总台令牌刷新成功: ${decoded.username}, ID: ${decoded.id}`);
-
-      return newTokens;
-
-    } catch (error) {
-      this.logError('总台令牌刷新失败', error);
-      throw new Error('刷新令牌无效或已过期');
-    }
-  }
-
-  /**
-   * 验证总台令牌
-   * @param {string} token - 访问令牌
-   * @returns {Promise<Object>} 解码后的用户信息
-   */
-  async verifyToken(token) {
-    try {
-      const decoded = jwt.verify(token, this.jwtSecret);
-      
-      if (decoded.type !== 'access') {
-        throw new Error('无效的令牌类型');
-      }
-
-      if (decoded.role !== USER_ROLE.CONSOLE_ADMIN) {
-        throw new Error('无效的总台访问令牌');
-      }
-
-      return decoded;
-
-    } catch (error) {
-      this.logError('总台令牌验证失败', error);
-      throw new Error('令牌无效或已过期');
     }
   }
 
@@ -215,29 +152,6 @@ class ConsoleAuthService extends BaseService {
     };
   }
 
-  /**
-   * 获取总台登录状态信息
-   * @param {string} username - 用户名
-   * @returns {Promise<Object>} 状态信息
-   */
-  async getLoginStatus(username) {
-    try {
-      const lockStatus = await this.loginTracker.checkLockStatus(username);
-      const failedAttempts = await this.loginTracker.getFailedAttempts(username);
-      
-      return {
-        isLocked: lockStatus.isLocked,
-        lockUntil: lockStatus.lockUntil,
-        failedAttempts,
-        remainingAttempts: Math.max(0, this.loginTracker.maxFailedAttempts - failedAttempts),
-        message: lockStatus.message
-      };
-      
-    } catch (error) {
-      this.logError('获取总台登录状态失败', error);
-      throw error;
-    }
-  }
 }
 
 module.exports = ConsoleAuthService;
