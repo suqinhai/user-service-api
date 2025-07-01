@@ -39,7 +39,7 @@ class ConsoleAuthController extends BaseController {
       );
 
       // 返回成功响应
-      return this.sendSuccess(res, '总台登录成功', {
+      return this.sendSuccess(res, '登录成功', {
         userInfo: result.user,
         token: result.tokens.accessToken,
       });

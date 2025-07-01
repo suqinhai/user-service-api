@@ -45,7 +45,7 @@ class BaseController {
     const response = {
       success: COMMON_STATUS.SUCCESS,      // 成功标识
       message,                             // 操作消息
-      timestamp: new Date().toISOString()  // 响应时间戳
+      // timestamp: new Date().toISOString()  // 响应时间戳
     };
 
     // 只有当data不为null时才添加data字段，避免不必要的null值

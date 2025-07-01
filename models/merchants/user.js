@@ -25,6 +25,12 @@ module.exports = (sequelize) => {
         isEmail: true
       }
     },
+    login_count: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      allowNull: false,
+      comment: '登录次数'
+    },
     role: {
       type: DataTypes.INTEGER,
       defaultValue: USER_ROLE.MERCHANT,

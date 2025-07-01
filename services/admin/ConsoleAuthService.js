@@ -44,9 +44,7 @@ class ConsoleAuthService extends BaseService {
         where: {
           username,
           role: USER_ROLE.CONSOLE_ADMIN, // 只允许总台管理员角色登录
-          status: {
-            [Op.ne]: USER_STATUS.DELETED // 排除已删除用户
-          }
+          status: USER_STATUS.ACTIVE
         }
       });
 
@@ -54,12 +52,6 @@ class ConsoleAuthService extends BaseService {
         // 记录失败尝试
         await this.loginTracker.recordFailedAttempt(username, ip);
         throw new Error('总台账号不存在或无权限');
-      }
-
-      // 3. 检查用户状态
-      if (!StatusHelper.isUserActive(user.status)) {
-        await this.loginTracker.recordFailedAttempt(username, ip);
-        throw new Error(`总台账号状态异常: ${StatusHelper.getDescription('USER_STATUS', user.status)}`);
       }
 
       // 4. 验证密码
