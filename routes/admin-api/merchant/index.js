@@ -4,14 +4,21 @@ const express = require('express');
 const router = express.Router();
 // 从中间件模块引入预定义的中间件堆栈和工厂函数
 const { stacks, factories } = require('../../../middleware');
-// 从控制器模块引入管理端用户管理控制器类
-// const { AdminUserController } = require('../../../controllers');
 
-// // 创建管理端用户管理控制器实例，用于处理具体的用户管理业务逻辑
-// const adminUserController = new AdminUserController();
+const { CountryController, CurrencyController, LanguageController } = require('../../../controllers');
 
-// 获取用户列表路由：需要用户读取权限，支持分页、搜索和过滤
-// router.get('/create', factories.createAdminPermissionStack(['user:read']), adminUserController.getUserList);
+const countryController = new CountryController();
+const currencyController = new CurrencyController();
+const languageController = new LanguageController();
+
+// 获取国家列表路由
+router.get('/countries', countryController.getCountries);
+
+// 获取货币列表路由
+router.get('/currencies', currencyController.getCurrencies);
+
+// 获取语言列表路由
+router.get('/languages', languageController.getLanguages);
 
 // 导出路由器，供上级路由使用
 module.exports = router;

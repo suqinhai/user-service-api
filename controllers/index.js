@@ -23,12 +23,18 @@ const MerchantProductController = require('./merchant/MerchantProductController'
 // 引入基础控制器：提供通用的控制器基类和公共方法
 const BaseController = require('./base/BaseController');
 const BaseMerchantController = require('./base/BaseMerchantController');
+const CountryController = require('./base/CountryController');   // 国家控制器
+const CurrencyController = require('./base/CurrencyController'); // 货币控制器
+const LanguageController = require('./base/LanguageController'); // 语言控制器
 
 // 导出所有控制器，使用对象结构便于按需引入
 module.exports = {
   // 基础控制器：提供通用功能和继承基类
   BaseController,
   BaseMerchantController,
+  CountryController,
+  CurrencyController,
+  LanguageController,
 
   // 用户端控制器：处理用户相关的HTTP请求
   UserAuthController,      // 用户认证：登录、注册、令牌管理

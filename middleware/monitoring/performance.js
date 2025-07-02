@@ -241,14 +241,14 @@ const performanceMonitor = (req, res, next) => {
     }
     
     // 记录请求详情（开发环境）
-    if (PERFORMANCE_CONFIG.logRequestDetails) {
-      logger.debug('请求完成', {
-        ...requestInfo,
-        responseTime: responseTimeMs,
-        statusCode: res.statusCode,
-        contentLength: res.get('Content-Length')
-      });
-    }
+    // if (PERFORMANCE_CONFIG.logRequestDetails) {
+    //   logger.debug('请求完成', {
+    //     ...requestInfo,
+    //     responseTime: responseTimeMs,
+    //     statusCode: res.statusCode,
+    //     contentLength: res.get('Content-Length')
+    //   });
+    // }
     
     // 定期更新系统统计
     const now = Date.now();
