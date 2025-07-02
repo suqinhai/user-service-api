@@ -2,8 +2,6 @@
 const express = require('express');
 // 创建Express路由器实例，专门处理管理端用户管理相关的路由
 const router = express.Router();
-// 从中间件模块引入预定义的中间件堆栈和工厂函数
-const { stacks, factories } = require('../../../middleware');
 
 const { CountryController, CurrencyController, LanguageController } = require('../../../controllers');
 

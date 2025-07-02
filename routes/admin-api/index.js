@@ -37,7 +37,7 @@ const merchantRouter = require('./merchant');    // 用户管理路由
 // const consoleRouter = require('./console'); // 总台认证路由
 
 // 注册需要认证的子路由到对应的路径
-router.use('/merchant', merchantRouter);   // 注册用户管理路由，路径为/api/admin/users
+router.use('/merchant', merchantRouter);   // 注册用户管理路由，路径为/api/admin/merchant
 // router.use('/system', systemRouter); // 注册系统管理路由，路径为/api/admin/system
 // router.use('/console', consoleRouter); // 注册总台认证路由，路径为/api/admin/console
 

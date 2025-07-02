@@ -4,7 +4,7 @@
  */
 
 const jwt = require('jsonwebtoken');
-const { userModel } = require('../../models');
+const { merchantUserModel } = require('../../models');
 const CacheManager = require('../../common/redis/cache');
 const { PREFIX, TTL } = require('../../common/redis');
 const { sendUnauthorized, sendBadRequest } = require('../../common/routeHandler');
@@ -35,7 +35,7 @@ const verifyToken = (token, secret = AUTH_CONFIG.JWT.secret) => {
  */
 async function getUserById(userId) {
   try {
-    return await userModel.findByPk(userId);
+    return await merchantUserModel.findByPk(userId);
   } catch (error) {
     logger.error(`通过ID获取用户失败: ${userId}`, error);
     return null;
@@ -79,7 +79,7 @@ const baseAuth = async (req, res, next) => {
       req.isAuthenticated = AUTH_STATUS.NOT_AUTHENTICATED;
       return next();
     }
-
+    
     // 检查token缓存
     const tokenKey = `${token.substring(0, 10)}`;
     const cachedTokenData = await CacheManager.get(PREFIX.TOKEN, tokenKey);
@@ -147,7 +147,7 @@ const requireAuth = async (req, res, next) => {
         return res.sendUnauthorized('需要登录才能访问此接口');
       }
 
-      if (req.user.status !== 'active') {
+      if (!StatusHelper.isUserActive(req.user.status)) {
         return res.sendUnauthorized('用户状态异常');
       }
 
@@ -173,10 +173,9 @@ const requireAuth = async (req, res, next) => {
 const requireAdmin = async (req, res, next) => {
   try {
     await requireAuth(req, res, () => {
-      if (req.user.role !== 'admin') {
+      if (req.user.role !== 30) {
         return res.sendUnauthorized('权限不足，需要管理员权限');
       }
-
       next();
     });
   } catch (error) {
