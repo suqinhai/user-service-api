@@ -4,12 +4,12 @@
  */
 
 const BaseController = require('../base/BaseController');
-const ConsoleAuthService = require('../../services/admin/LoginAuthService');
+const LoginAuthService = require('../../services/admin/LoginAuthService');
 
 class LoginAuthController extends BaseController {
   constructor() {
     super();
-    this.consoleAuthService = new ConsoleAuthService();
+    this.loginAuthService = new LoginAuthService();
   }
 
   /**
