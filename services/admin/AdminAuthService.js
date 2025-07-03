@@ -8,7 +8,7 @@ const AdminLoginTracker = require('./AdminAuthUtils');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { Op } = require('sequelize');
-const { USER_STATUS, USER_ROLE, COMMON_STATUS } = require('../../common/constants/status');
+const { USER_STATUS, USER_ROLE } = require('../../common/constants/status');
 const { StatusHelper } = require('../../common/utils/statusHelper');
 
 class AdminAuthService extends BaseService {
