@@ -4,12 +4,12 @@
  */
 
 const BaseController = require('../base/BaseController');
-const LoginAuthService = require('../../services/admin/AdminAuthService');
+const MerchantAuthService = require('../../services/merchant/MerchantAuthService');
 
-class LoginAuthController extends BaseController {
+class MerchantAuthController extends BaseController {
   constructor() {
     super();
-    this.loginAuthService = new LoginAuthService();
+    this.merchantAuthService = new MerchantAuthService();
   }
 
   /**
@@ -30,7 +30,7 @@ class LoginAuthController extends BaseController {
       const clientIP = req.ip || req.connection.remoteAddress || req.socket.remoteAddress;
 
       // 调用服务层处理登录逻辑
-      const result = await this.consoleAuthService.login(
+      const result = await this.merchantAuthService.login(
         username.trim(),
         password,
         clientIP,
@@ -73,7 +73,7 @@ class LoginAuthController extends BaseController {
       }
 
       // 调用服务层处理登出逻辑
-      const result = await this.consoleAuthService.logout(token, user);
+      const result = await this.merchantAuthService.logout(token, user);
 
       return this.sendSuccess(res, result.message, {
         logoutTime: result.logoutTime
@@ -86,4 +86,4 @@ class LoginAuthController extends BaseController {
   });
 }
 
-module.exports = LoginAuthController;
+module.exports = MerchantAuthController;

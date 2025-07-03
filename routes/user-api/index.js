@@ -3,6 +3,14 @@ const express = require('express');
 // 创建Express路由器实例，专门处理用户端API路由
 const router = express.Router();
 
+// 引入H5认证路由模块（需要在认证中间件之前注册，因为登录接口本身不需要认证）
+const loginRouter = require('./no_require_auth/index'); // 总台认证路由
+
+// 注册总台认证路由，路径为/api/admin/auth（无需认证的公开路由）
+router.use('/auth', loginRouter);
+
+
+
 // 从中间件模块引入用户端专用中间件
 const { userApi } = require('../../middleware');
 

@@ -9,7 +9,7 @@ const AdminAuthService = require('../../services/admin/AdminAuthService');
 class AdminAuthController extends BaseController {
   constructor() {
     super();
-    this.loginAuthService = new LoginAuthService();
+    this.loginAuthService = new AdminAuthService();
   }
 
   /**
@@ -30,7 +30,7 @@ class AdminAuthController extends BaseController {
       const clientIP = req.ip || req.connection.remoteAddress || req.socket.remoteAddress;
 
       // 调用服务层处理登录逻辑
-      const result = await this.consoleAuthService.login(
+      const result = await this.loginAuthService.login(
         username.trim(),
         password,
         clientIP,
@@ -73,7 +73,7 @@ class AdminAuthController extends BaseController {
       }
 
       // 调用服务层处理登出逻辑
-      const result = await this.consoleAuthService.logout(token, user);
+      const result = await this.loginAuthService.logout(token, user);
 
       return this.sendSuccess(res, result.message, {
         logoutTime: result.logoutTime
