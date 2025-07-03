@@ -8,61 +8,40 @@ const { logger } = require('../../common/logger');
 /**
  * 中间件组合器
  * 将多个中间件组合成一个中间件函数
+ * 修复版本：修正index初始化错误和next函数调用方式，确保正确的Express中间件链集成
  * @param {...Function} middlewares - 中间件函数列表
  * @returns {Function} 组合后的中间件函数
  */
 function composeMiddlewares(...middlewares) {
-  return function composedMiddleware(req, res, next) {
+  return (req, res, next) => {
     let index = -1;
-    let finished = false;
 
     function dispatch(i) {
-      if (finished) {
-        return Promise.resolve();
-      }
-
       if (i <= index) {
-        finished = true;
         return Promise.reject(new Error('next() called multiple times'));
       }
 
       index = i;
-      let fn = middlewares[i];
 
+      // 如果已经执行完所有中间件，直接调用最终的next
       if (i === middlewares.length) {
-        finished = true;
-        fn = next;
+        return next();
       }
 
+      let fn = middlewares[i];
+
       if (!fn) {
-        return Promise.resolve();
+        return;
       }
 
       try {
-        return Promise.resolve(fn(req, res, function nextWrapper(err) {
-          if (finished) {
-            return Promise.resolve();
-          }
-
-          if (err) {
-            finished = true;
-            return Promise.reject(err);
-          }
-
-          return dispatch(i + 1);
-        }));
+        return Promise.resolve(fn(req, res, () => dispatch(i + 1)));
       } catch (err) {
-        finished = true;
         return Promise.reject(err);
       }
     }
 
-    dispatch(0).catch(err => {
-      if (!finished && next && typeof next === 'function') {
-        finished = true;
-        next(err);
-      }
-    });
+    return dispatch(0);
   };
 }
 
