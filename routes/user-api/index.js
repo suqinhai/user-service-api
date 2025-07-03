@@ -9,8 +9,6 @@ const loginRouter = require('./no_require_auth/index'); // 总台认证路由
 // 注册总台认证路由，路径为/api/admin/auth（无需认证的公开路由）
 router.use('/auth', loginRouter);
 
-
-
 // 从中间件模块引入用户端专用中间件
 const { userApi } = require('../../middleware');
 

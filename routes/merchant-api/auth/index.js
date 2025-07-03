@@ -10,9 +10,6 @@ const { MerchantAuthController } = require('../../../controllers');
 // 创建商户认证控制器实例，用于处理具体的认证业务逻辑
 const merchantAuthController = new MerchantAuthController();
 
-// 商户登录路由：处理商户登录请求，验证凭据并返回JWT令牌
-router.post('/login', stacks.merchant.login, merchantAuthController.login);
-
 // 商户登出路由：需要认证中间件验证，处理商户登出并使令牌失效
 router.post('/logout', stacks.merchant.authenticated, merchantAuthController.logout);
 
