@@ -7,7 +7,7 @@ const BaseService = require('../base/BaseService');
 const CacheManager = require('../../common/redis/cache');
 const { logger } = require('../../common/logger');
 
-class ConsoleLoginTracker extends BaseService {
+class AdminAuthUtils extends BaseService {
   constructor() {
     super();
     this.maxFailedAttempts = 10; // 最大失败次数
@@ -200,4 +200,4 @@ class ConsoleLoginTracker extends BaseService {
   }
 }
 
-module.exports = ConsoleLoginTracker;
+module.exports = AdminAuthUtils;

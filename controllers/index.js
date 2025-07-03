@@ -12,7 +12,7 @@ const UserProfileController = require('./user/UserProfileController');   // 用�
 // const AdminUserController = require('./admin/AdminUserController');       // 管理端用户管理控制器
 // const AdminSystemController = require('./admin/AdminSystemController');   // 管理端系统管理控制器
 // const ConsoleAuthController = require('./admin/ConsoleAuthController');   // 总台认证控制器
-const LoginAuthController = require('./admin/LoginAuthController');   // 总台登录控制器
+const LoginAuthController = require('./admin/AdminAuthController');   // 总台登录控制器
 
 
 // 引入商户端控制器：处理面向商户用户的业务逻辑

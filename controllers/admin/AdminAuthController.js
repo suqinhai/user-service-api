@@ -4,9 +4,9 @@
  */
 
 const BaseController = require('../base/BaseController');
-const LoginAuthService = require('../../services/admin/LoginAuthService');
+const AdminAuthService = require('../../services/admin/AdminAuthService');
 
-class LoginAuthController extends BaseController {
+class AdminAuthController extends BaseController {
   constructor() {
     super();
     this.loginAuthService = new LoginAuthService();
@@ -86,4 +86,4 @@ class LoginAuthController extends BaseController {
   });
 }
 
-module.exports = LoginAuthController;
+module.exports = AdminAuthController;

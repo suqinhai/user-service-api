@@ -4,17 +4,17 @@
  */
 
 const BaseService = require('../base/BaseService');
-const ConsoleLoginTracker = require('./LoginAuthUtils');
+const AdminLoginTracker = require('./AdminAuthUtils');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { Op } = require('sequelize');
 const { USER_STATUS, USER_ROLE, COMMON_STATUS } = require('../../common/constants/status');
 const { StatusHelper } = require('../../common/utils/statusHelper');
 
-class ConsoleAuthService extends BaseService {
+class AdminAuthService extends BaseService {
   constructor() {
     super();
-    this.loginTracker = new ConsoleLoginTracker();
+    this.loginTracker = new AdminLoginTracker();
     this.jwtSecret = process.env.JWT_SECRET || 'your_jwt_secret';
     this.jwtExpiresIn = process.env.JWT_EXPIRES_IN || '8h'; // 总台令牌8小时有效期
     this.refreshTokenExpiresIn = process.env.REFRESH_TOKEN_EXPIRES_IN || '24h';
@@ -154,4 +154,4 @@ class ConsoleAuthService extends BaseService {
 
 }
 
-module.exports = ConsoleAuthService;
+module.exports = AdminAuthService;

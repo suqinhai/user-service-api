@@ -7,15 +7,15 @@ const express = require('express');
 const router = express.Router();
 
 // 引入总台中间件和控制器
-const { LoginAuthController } = require('../../../controllers');
+const { AdminAuthController } = require('../../../controllers');
 
 // 创建总台认证控制器实例
-const loginAuthController = new LoginAuthController();
+const adminAuthController = new AdminAuthController();
 
 /**
  * 总台登录路由
  * POST /api/admin/auth/login
  */
-router.post('/login', loginAuthController.login);
+router.post('/login', adminAuthController.login);
 
 module.exports = router;

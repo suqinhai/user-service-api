@@ -66,14 +66,14 @@ class CurrencyController extends BaseController {
       }
 
       // 返回成功响应
-      return this.sendSuccess(res, '获取货币列表成功', {
+      return this.sendSuccess(res, '成功', {
         currencies: filteredCurrencies,
         total: filteredCurrencies.length
       });
 
     } catch (error) {
-      this.logError('获取货币列表失败', error, req);
-      return this.sendError(res, '获取货币列表失败', 500);
+      this.logError('失败', error, req);
+      return this.sendError(res, '失败', 500);
     }
   });
 }

@@ -14,22 +14,10 @@ const userAuthController = new UserAuthController();
 router.post('/login', userAuthController.login);
 
 // 用户登出路由：需要认证中间件验证，处理用户登出并使令牌失效
+
+
+
 router.post('/logout', stacks.user.authenticated, userAuthController.logout);
-
-// 刷新令牌路由：使用刷新令牌获取新的访问令牌，延长用户会话
-router.post('/refresh', userAuthController.refreshToken);
-
-// 用户注册路由：处理新用户注册请求，创建用户账户
-router.post('/register', userAuthController.register);
-
-// 获取当前用户信息路由：需要认证，返回当前登录用户的详细信息
-router.get('/me', stacks.user.authenticated, userAuthController.getCurrentUser);
-
-// 修改密码路由：需要认证，允许用户修改自己的登录密码
-router.put('/password', stacks.user.authenticated, userAuthController.changePassword);
-
-// 验证令牌路由：验证JWT令牌的有效性，用于客户端令牌状态检查
-router.get('/verify', userAuthController.verifyToken);
 
 // 导出路由器，供上级路由使用
 module.exports = router;
