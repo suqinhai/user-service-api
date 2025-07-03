@@ -28,7 +28,6 @@ class UserAuthService extends BaseService {
    */
   async login(username, password, sequelize) {
     try {
-      this.logAction('用户登录尝试', { username });
 
       // 验证输入参数
       const validation = this.validateData({ username, password }, {
@@ -44,10 +43,9 @@ class UserAuthService extends BaseService {
       const User = sequelize.models.User;
       const user = await User.findOne({
         where: {
-          [Op.or]: [
-            { username: username },
-            { email: username }
-          ]
+          username: username,
+          role: USER_ROLE.USER,
+          status: USER_STATUS.ACTIVE
         }
       });
 
@@ -83,7 +81,7 @@ class UserAuthService extends BaseService {
       // 清除敏感信息
       const userInfo = this.sanitizeUserInfo(user);
 
-      this.logAction('用户登录成功', { userId: user.id, username: user.username });
+      // this.logAction('用户登录成功', { userId: user.id, username: user.username });
 
       return {
         user: userInfo,
