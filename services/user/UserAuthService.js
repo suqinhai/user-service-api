@@ -39,7 +39,7 @@ class UserAuthService extends BaseService {
         throw new Error('登录参数验证失败: ' + validation.errors.map(e => e.message).join(', '));
       }
 
-      // 查找用户（支持用户名或邮箱登录）
+      // 查找用户
       const User = sequelize.models.User;
       const user = await User.findOne({
         where: {
@@ -75,8 +75,8 @@ class UserAuthService extends BaseService {
         login_count: (user.login_count || 0) + 1
       });
 
-      // 记录登录成功
-      await this.recordLoginAttempt(user.id, COMMON_STATUS.SUCCESS, sequelize);
+      // // 记录登录成功
+      // await this.recordLoginAttempt(user.id, COMMON_STATUS.SUCCESS, sequelize);
 
       // 清除敏感信息
       const userInfo = this.sanitizeUserInfo(user);
