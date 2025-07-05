@@ -183,7 +183,7 @@ app.use(express.static(path.join(__dirname, 'public'), {
 }));
 
 // 引入并注册主路由模块，所有API路由都以/api为前缀
-const routes = require('./routes');
+const routes = require('./app/routes');
 app.use('/api', routes);
 
 // 从中间件模块导入快速错误处理器

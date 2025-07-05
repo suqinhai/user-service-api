@@ -4,7 +4,7 @@
  */
 
 const jwt = require('jsonwebtoken');
-const { merchantUserModel } = require('../../models');
+const { merchantUserModel } = require('../../app/models');
 const CacheManager = require('../../common/redis/cache');
 const { PREFIX, TTL } = require('../../common/redis');
 const { sendUnauthorized, sendBadRequest } = require('../../common/routeHandler');
