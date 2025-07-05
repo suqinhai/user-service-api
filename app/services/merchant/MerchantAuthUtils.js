@@ -7,7 +7,7 @@ const BaseService = require('../base/BaseService');
 const CacheManager = require('../../../common/redis/cache');
 const { logger } = require('../../../common/logger');
 
-class AdminAuthUtils extends BaseService {
+class MerchantAuthUtils extends BaseService {
   constructor() {
     super();
     this.maxFailedAttempts = 10; // 最大失败次数
@@ -200,4 +200,4 @@ class AdminAuthUtils extends BaseService {
   }
 }
 
-module.exports = AdminAuthUtils;
+module.exports = MerchantAuthUtils;

@@ -11,7 +11,7 @@ const { Op } = require('sequelize');
 const { USER_STATUS, USER_ROLE } = require('../../../common/constants/status');
 const { StatusHelper } = require('../../../common/utils/statusHelper');
 
-class AdminAuthService extends BaseService {
+class MerchantAuthService extends BaseService {
   constructor() {
     super();
     this.merchantLoginTracker = new MerchantLoginTracker();
@@ -154,4 +154,4 @@ class AdminAuthService extends BaseService {
 
 }
 
-module.exports = AdminAuthService;
+module.exports = MerchantAuthService;
