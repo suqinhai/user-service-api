@@ -188,38 +188,6 @@ const requireAdmin = async (req, res, next) => {
 };
 
 /**
- * 超级管理员认证中间件
- * 要求用户必须是超级管理员
- * @param {Object} req - 请求对象
- * @param {Object} res - 响应对象
- * @param {Function} next - 下一个中间件
- * @returns {Promise<void>}
- */
-const requireSuperAdmin = async (req, res, next) => {
-  try {
-    await requireAdmin(req, res, () => {
-      if (req.user.role !== 'super_admin' && req.user.level !== 'super') {
-        logger.security('非超级管理员尝试访问超级管理员接口', {
-          adminId: req.user.id,
-          role: req.user.role,
-          path: req.path,
-          ip: req.ip
-        });
-        return res.sendUnauthorized('权限不足，需要超级管理员权限');
-      }
-
-      next();
-    });
-  } catch (error) {
-    logger.error('超级管理员认证中间件错误:', error);
-    res.status(500).json({
-      success: COMMON_STATUS.FAILED,
-      message: '认证服务异常'
-    });
-  }
-};
-
-/**
  * 权限检查中间件工厂
  * @param {Array|string} permissions - 需要的权限
  * @param {Object} options - 选项配置
@@ -243,7 +211,7 @@ function requirePermissions(permissions, options = {}) {
         }
 
         // 检查用户状态
-        if (req.user.status !== 'active') {
+        if (req.user.status != '1') {
           return res.sendUnauthorized('用户状态异常，无法访问');
         }
 
@@ -284,7 +252,6 @@ module.exports = {
   baseAuth,
   requireAuth,
   requireAdmin,
-  requireSuperAdmin,
   requirePermissions,
   verifyToken,
   extractToken,

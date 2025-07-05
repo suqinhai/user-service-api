@@ -3,7 +3,7 @@
  * 为管理端接口提供严格的认证、限流和权限控制
  */
 
-const { requireAdmin, requireSuperAdmin, requirePermissions } = require('../core/auth');
+const { requireAdmin, requirePermissions } = require('../core/auth');
 const { adminRateLimit, strictRateLimit, createCustomRateLimit } = require('../core/rateLimit');
 const { adminDataCache, createCacheMiddleware } = require('../core/cache');
 const { adminApiType } = require('../utils/apiType');
@@ -22,11 +22,6 @@ const adminAuth = {
   required: requireAdmin,
   
   /**
-   * 超级管理员认证
-   */
-  superAdmin: requireSuperAdmin,
-  
-  /**
    * 带权限检查的管理员认证
    * @param {Array|string} permissions - 需要的权限
    * @param {Object} options - 选项配置
@@ -35,19 +30,6 @@ const adminAuth = {
   withPermissions: (permissions, options = {}) => {
     return requirePermissions(permissions, { ...options, requireAuth: true });
   },
-  
-  /**
-   * 超级管理员权限检查
-   * @param {Array|string} permissions - 需要的权限
-   * @param {Object} options - 选项配置
-   * @returns {Function} 中间件函数
-   */
-  superAdminWithPermissions: (permissions, options = {}) => {
-    return createMiddlewareChain()
-      .use(requireSuperAdmin)
-      .use(requirePermissions(permissions, { ...options, requireAuth: false }))
-      .build();
-  }
 };
 
 /**
@@ -274,11 +256,7 @@ function createPermissionStack(permissions, options = {}) {
     .use(adminApiType)
     .use(strictLimiting ? adminLimiting.strict : adminLimiting.standard);
   
-  if (superAdminRequired) {
-    chain.use(adminAuth.superAdminWithPermissions(permissions, options));
-  } else {
-    chain.use(adminAuth.withPermissions(permissions, options));
-  }
+  chain.use(adminAuth.withPermissions(permissions, options));
   
   if (caching) {
     chain.use(adminCaching.medium);

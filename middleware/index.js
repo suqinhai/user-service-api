@@ -22,7 +22,6 @@ const helpers = require('./utils/helpers');
 const userMiddleware = require('./api/user');
 const adminMiddleware = require('./api/admin');
 const merchantMiddleware = require('./api/merchant');
-const commonMiddleware = require('./api/common');
 
 // 配置
 const config = require('./config');
@@ -61,7 +60,6 @@ const api = {
   user: userMiddleware,
   admin: adminMiddleware,
   merchant: merchantMiddleware,
-  common: commonMiddleware
 };
 
 /**
@@ -71,7 +69,6 @@ const quick = {
   // 认证相关
   requireAuth: auth.requireAuth,
   requireAdmin: auth.requireAdmin,
-  requireSuperAdmin: auth.requireSuperAdmin,
   requirePermissions: auth.requirePermissions,
   baseAuth: auth.baseAuth,
   
@@ -157,17 +154,6 @@ const stacks = {
     product: merchantMiddleware.product,
     shopAccess: merchantMiddleware.shopAccess
   },
-  
-  // 通用栈
-  common: {
-    public: commonMiddleware.public,
-    optionalAuth: commonMiddleware.optionalAuth,
-    cached: commonMiddleware.cached,
-    static: commonMiddleware.static,
-    docs: commonMiddleware.docs,
-    health: commonMiddleware.health,
-    autoType: commonMiddleware.autoType
-  }
 };
 
 /**
@@ -185,10 +171,6 @@ const factories = {
   // 商户端工厂
   createMerchantStack: merchantMiddleware.custom,
   createMerchantPermissionStack: merchantMiddleware.withPermissions,
-  
-  // 通用工厂
-  createCommonStack: commonMiddleware.custom,
-  createConditionalAuthStack: commonMiddleware.conditionalAuth,
   
   // 核心工厂
   createRateLimit: rateLimit.createCustomRateLimit,
