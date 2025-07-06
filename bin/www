@@ -1,229 +1,59 @@
 #!/usr/bin/env node
 
 /**
- * Module dependencies.
+ * 应用程序主入口文件
+ * 负责协调各个模块，启动应用程序
  */
 
-var app = require('../app');
-var debug = require('debug')('my-app:server');
-var http = require('http');
-var dotenv = require('dotenv');
-var { getEnvPath, clusterLogger } = require('../common/index');
-var cluster = require('cluster');
-var os = require('os');
+// 模块依赖
+const app = require('../app');
+const dotenv = require('dotenv');
+const { getEnvPath } = require('../common/index');
+const ClusterManager = require('./cluster-manager');
+const ServerConfig = require('./server-config');
+const ServerUtils = require('./server-utils');
 
+// 加载环境配置
 const envConfig = dotenv.config({
   path: getEnvPath(), // 配置文件路径
   encoding: 'utf8', // 编码方式，默认utf8
   debug: false, // 是否开启debug，默认false
 }).parsed;
 
-// 获取CPU核心数量
-const numCPUs = os.cpus().length;
+// 检查是否启用集群模式
+const clusterMode = ServerUtils.isClusterModeEnabled();
 
-// 检查是否启用集群模式 (通过环境变量 CLUSTER_MODE)
-const clusterMode = process.env.CLUSTER_MODE === 'true';
-
-
-if (clusterMode && cluster.isMaster) {
-  // 主进程逻辑
-  clusterLogger.info(`主进程已启动`);
-  clusterLogger.info(`启动 ${numCPUs} 个工作进程...`);
-
-  // 记录已创建的工作进程数量
-  let workerCount = 0;
-
-  // 根据CPU核心数量创建工作进程
-  for (let i = 0; i < numCPUs; i++) {
-    cluster.fork();
-    workerCount++;
-  }
-
-  // 监听工作进程退出事件
-  cluster.on('exit', (worker, code, signal) => {
-    clusterLogger.clusterEvent('EXIT', `工作进程已退出`, { 
-      workerId: worker.id,
-      pid: worker.process.pid,
-      exitCode: code,
-      signal: signal || 'none'
-    });
-    workerCount--;
-    
-    // 如果不是正常退出，则重新创建一个工作进程
-    if (code !== 0 && !worker.exitedAfterDisconnect) {
-      clusterLogger.info('正在创建新的工作进程...');
-      cluster.fork();
-      workerCount++;
-    }
-
-    clusterLogger.info(`当前活动工作进程数量: ${workerCount}`);
-  });
-
-  // 监听工作进程在线事件
-  cluster.on('online', (worker) => {
-    clusterLogger.clusterEvent('ONLINE', '工作进程已上线', {
-      workerId: worker.id,
-      pid: worker.process.pid
-    });
-  });
-
-  // 处理主进程退出信号
-  process.on('SIGTERM', () => {
-    clusterLogger.clusterEvent('SHUTDOWN', '主进程接收到 SIGTERM 信号，准备优雅退出...');
-    
-    // 通知所有工作进程进行优雅退出
-    for (const id in cluster.workers) {
-      cluster.workers[id].send('graceful-exit');
-    }
-    
-    // 等待所有工作进程退出
-    const exitTimeout = setTimeout(() => {
-      clusterLogger.warn('超时强制退出...');
-      process.exit(0);
-    }, 5000);
-    
-    // 当所有工作进程退出后，清除定时器并退出主进程
-    let exitInterval = setInterval(() => {
-      if (workerCount === 0) {
-        clusterLogger.info('所有工作进程已退出，主进程退出中...');
-        clearInterval(exitInterval);
-        clearTimeout(exitTimeout);
-        process.exit(0);
-      }
-    }, 100);
-  });
-} else {
-  // 工作进程逻辑 (或单进程模式)
-  if (clusterMode) {
-    clusterLogger.info('工作进程已启动');
+/**
+ * 启动应用程序
+ */
+function startApplication() {
+  if (clusterMode && ClusterManager.isMaster()) {
+    // 集群模式 - 主进程
+    startClusterMaster();
   } else {
-    clusterLogger.info('单进程模式已启动');
-  }
-
-  /**
-   * Get port from environment and store in Express.
-   */
-
-  var port = normalizePort(process.env.PORT || '3001');
-  app.set('port', port);
-
-  /**
-   * Create HTTP server.
-   */
-
-  var server = http.createServer(app);
-
-  /**
-   * Listen on provided port, on all network interfaces.
-   */
-
-  server.listen(port);
-  server.on('error', onError);
-  server.on('listening', onListening);
-
-  /**
-   * 处理优雅退出
-   */
-  if (clusterMode) {
-    process.on('message', (msg) => {
-      if (msg === 'graceful-exit') {
-        clusterLogger.clusterEvent('SHUTDOWN', '工作进程准备优雅退出...');
-        
-        // 停止接受新的连接
-        server.close(() => {
-          clusterLogger.info('所有连接已关闭，工作进程退出中...');
-          process.exit(0);
-        });
-        
-        // 设置超时强制退出
-        setTimeout(() => {
-          clusterLogger.warn('强制退出工作进程');
-          process.exit(1);
-        }, 3000);
-      }
-    });
-  }
-  
-  // 处理进程退出信号
-  process.on('SIGTERM', () => {
-    if (!clusterMode) {
-      clusterLogger.clusterEvent('SHUTDOWN', '单进程模式接收到 SIGTERM 信号，准备优雅退出...');
-      server.close(() => {
-        clusterLogger.info('服务器已关闭，进程退出中...');
-        process.exit(0);
-      });
-      
-      // 设置超时强制退出
-      setTimeout(() => {
-        clusterLogger.warn('强制退出');
-        process.exit(1);
-      }, 3000);
-    }
-  });
-}
-
-/**
- * Normalize a port into a number, string, or false.
- */
-
-function normalizePort(val) {
-  var port = parseInt(val, 10);
-
-  if (isNaN(port)) {
-    // named pipe
-    return val;
-  }
-
-  if (port >= 0) {
-    // port number
-    return port;
-  }
-
-  return false;
-}
-
-/**
- * Event listener for HTTP server "error" event.
- */
-
-function onError(error) {
-  if (error.syscall !== 'listen') {
-    throw error;
-  }
-
-  var bind = typeof port === 'string'
-    ? 'Pipe ' + port
-    : 'Port ' + port;
-
-  // handle specific listen errors with friendly messages
-  switch (error.code) {
-    case 'EACCES':
-      clusterLogger.error(bind + ' requires elevated privileges');
-      process.exit(1);
-      break;
-    case 'EADDRINUSE':
-      clusterLogger.error(bind + ' is already in use');
-      process.exit(1);
-      break;
-    default:
-      throw error;
+    // 工作进程或单进程模式
+    startWorkerProcess();
   }
 }
 
 /**
- * Event listener for HTTP server "listening" event.
+ * 启动集群主进程
  */
-
-function onListening() {
-  var addr = server.address();
-  var bind = typeof addr === 'string'
-    ? 'pipe ' + addr
-    : 'port ' + addr.port;
-  debug('Listening on ' + bind);
-  
-  if (clusterMode) {
-    clusterLogger.info(`工作进程正在监听端口 ${addr.port}`);
-  } else {
-    clusterLogger.info(`服务器运行在端口 ${addr.port}`);
-  }
+function startClusterMaster() {
+  const clusterManager = new ClusterManager();
+  clusterManager.start();
 }
+
+/**
+ * 启动工作进程
+ */
+function startWorkerProcess() {
+  const serverConfig = new ServerConfig(app, { clusterMode });
+
+  serverConfig
+    .initialize()
+    .start();
+}
+
+// 启动应用程序
+startApplication();
