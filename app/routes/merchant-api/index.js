@@ -17,9 +17,11 @@ router.use('/auth', loginRouter);
 
 // 引入商户端子路由模块
 const authRouter = require('./auth');        // 商户认证路由
+const securityRouter = require('./security'); // 商户安全设置路由
 
 // 注册子路由到对应的路径
 router.use('/auth', authRouter);      // 注册认证路由，路径为/api/merchant/auth
+router.use('/security', securityRouter); // 注册安全设置路由，路径为/api/merchant/security
 
 // 导出路由器，供上级路由使用
 module.exports = router;
