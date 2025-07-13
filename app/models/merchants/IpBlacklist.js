@@ -20,6 +20,33 @@ const IpBlacklistSchema = new Schema({
     trim: true
   },
   
+  // 限制类型: 1-登录限制, 2-注册限制, 3-全部限制
+  restrictType: {
+    type: Number,
+    default: 3,
+    enum: [1, 2, 3],
+    required: true
+  },
+  
+  // 关联账号列表
+  relatedAccounts: [{
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'MerchantsUsers'
+    },
+    username: String,
+    addedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  
+  // 关联账号数量
+  accountCount: {
+    type: Number,
+    default: 0
+  },
+  
   // 备注说明
   remark: {
     type: String,
@@ -57,3 +84,4 @@ const IpBlacklistSchema = new Schema({
 IpBlacklistSchema.index({ merchantId: 1, ip: 1 }, { unique: true });
 
 module.exports = mongoose.model('IpBlacklist', IpBlacklistSchema);
+

@@ -16,6 +16,7 @@ const LanguageController = require('./base/LanguageController'); // 语言控制
 
 // 引入商户端控制器：处理面向商户用户的业务逻辑
 const MerchantAuthController = require('./merchant/MerchantAuthController');         // 商户认证控制器
+const MerchantSecurityController = require('./merchant/MerchantSecurityController');         // 商户安全控制器
 
 // 引入用户端控制器：处理面向普通用户的业务逻辑
 const UserAuthController = require('./user/UserAuthController');         // 用户认证控制器
@@ -38,4 +39,5 @@ module.exports = {
 
   // 商户端控制器：处理商户相关的HTTP请求
   MerchantAuthController,
+  MerchantSecurityController,
 };
