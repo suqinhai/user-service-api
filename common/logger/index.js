@@ -167,6 +167,11 @@ const logger = createLogger({
   exitOnError: false
 });
 
+// 在创建logger对象后，添加security方法
+logger.security = (message, data) => {
+  log(LOG_LEVELS.INFO, 'security', message, data);
+};
+
 /**
  * 记录日志
  * @param {string} level - 日志级别
@@ -251,6 +256,15 @@ function logError(category, message, error) {
 }
 
 /**
+ * 记录安全相关日志
+ * @param {string} message - 日志消息
+ * @param {Object} [data] - 附加数据
+ */
+function logSecurity(message, data = null) {
+  log(LOG_LEVELS.INFO, 'security', message, data);
+}
+
+/**
  * 创建Express中间件，用于记录请求日志
  * @returns {Function} Express中间件函数
  */
@@ -276,6 +290,7 @@ module.exports = {
   logCachePerformance,
   logRequestPerformance,
   logError,
+  logSecurity,
   requestLogger,
   logger
 };
