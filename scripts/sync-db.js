@@ -218,19 +218,23 @@ async function syncDatabase() {
       }
     }
     
-    // 同步 MongoDB 数据库
-    if (!sqlOnly) {
+    // 同步 MongoDB 数据库，除非明确跳过
+    if (!sqlOnly && !skipMongo) {
       try {
         await syncMongooseDatabase();
         logger.info('MongoDB 数据库同步成功');
       } catch (error) {
         mongoSuccess = false;
         logger.error('MongoDB 数据库同步失败:', error);
+        logger.warn('MongoDB 同步失败，但将继续处理 SQL 数据库');
       }
+    } else if (skipMongo) {
+      logger.info('已跳过 MongoDB 同步');
+      mongoSuccess = true; // 标记为成功，因为已明确跳过
     }
     
     // 根据同步结果设置退出码
-    if ((mongoOnly && !mongoSuccess) || (sqlOnly && !sqlSuccess) || (!mongoOnly && !sqlOnly && !sqlSuccess && !mongoSuccess)) {
+    if ((mongoOnly && !mongoSuccess) || (sqlOnly && !sqlSuccess) || (!mongoOnly && !sqlOnly && !sqlSuccess && (!mongoSuccess && !skipMongo))) {
       logger.error('数据库同步过程中发生错误');
       process.exit(1);
     } else {
