@@ -6,6 +6,7 @@
 
 // 引入MySQL数据库连接模块（Sequelize ORM）
 const sequelize = require('./mysql');
+const sequelizeUser = require('./mysql/user-config');
 // 引入MongoDB数据库连接模块
 const mongodb = require('./mango');
 // 引入路由处理器模块，提供统一的响应格式
@@ -31,6 +32,7 @@ module.exports = {
     ...routeHandler,
     // 数据库连接实例
     sequelize,      // MySQL/PostgreSQL数据库连接
+    sequelizeUser,  // 用户数据库连接
     mongodb,        // MongoDB数据库连接
     redis,          // Redis缓存数据库连接
     cacheManager,   // 缓存管理器实例
