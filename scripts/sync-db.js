@@ -29,6 +29,7 @@ const force = args.includes('--force');
 const alter = !force && args.includes('--alter');
 const mongoOnly = args.includes('--mongo');
 const sqlOnly = args.includes('--sql');
+const skipMongo = process.env.SKIP_MONGO_SYNC === 'true' || args.includes('--skip-mongo');
 
 // 同步选项
 const syncOptions = {
@@ -71,15 +72,44 @@ async function syncSequelizeDatabase() {
           }
         }
 
-        // 同步所有模型到数据库
-        if (sequelizeModels.length > 0) {
-          await sequelize.sync(syncOptions);
-          logger.info('主数据库同步完成!');
-        }
-        
+        // 先同步用户数据库模型，因为它们可能被主数据库模型引用
         if (sequelizeUserModels.length > 0) {
+          logger.info('开始同步用户数据库模型...');
           await sequelizeUser.sync(syncOptions);
           logger.info('用户数据库同步完成!');
+        }
+        
+        // 然后同步主数据库模型
+        if (sequelizeModels.length > 0) {
+          logger.info('开始同步主数据库模型...');
+          
+          // 如果有外键约束问题，可以先禁用外键检查
+          if (force || alter) {
+            logger.info('临时禁用外键约束检查...');
+            await sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
+          }
+          
+          try {
+            await sequelize.sync(syncOptions);
+            logger.info('主数据库同步完成!');
+          } finally {
+            // 恢复外键检查
+            if (force || alter) {
+              logger.info('恢复外键约束检查...');
+              await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
+            }
+          }
+        }
+        
+        // 单独同步 IpBlacklist 模型，确保它在用户表之后创建
+        try {
+          if (models.IpBlacklistModel) {
+            logger.info('同步 IpBlacklist 表结构...');
+            await models.IpBlacklistModel.sync(syncOptions);
+            logger.info('IpBlacklist 表结构同步完成');
+          }
+        } catch (error) {
+          logger.error('同步 IpBlacklist 表结构失败:', error);
         }
         
         if (force) {
@@ -101,12 +131,25 @@ async function syncMongooseDatabase() {
     try {
       logger.info('开始同步 MongoDB 数据库结构...');
       
+      // 从环境变量获取MongoDB连接URI
+      const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI;
+      
+      // 检查是否配置了MongoDB URI
+      if (!mongoUri) {
+        logger.warn('未配置MongoDB连接URI，跳过MongoDB同步');
+        return;
+      }
+      
       // 连接到 MongoDB
       if (!mongoose.connection.readyState) {
-        await mongoose.connect(process.env.MONGODB_URI, {
+        logger.info(`尝试连接到MongoDB: ${mongoUri.replace(/\/\/([^:]+):([^@]+)@/, '//***:***@')}`);
+        
+        await mongoose.connect(mongoUri, {
           useNewUrlParser: true,
-          useUnifiedTopology: true
+          useUnifiedTopology: true,
+          serverSelectionTimeoutMS: 5000 // 设置较短的超时时间，避免长时间等待
         });
+        
         logger.info('已连接到 MongoDB');
       }
       
@@ -120,34 +163,6 @@ async function syncMongooseDatabase() {
         logger.info(`MongoDB 模型: ${model.modelName}`);
       });
       
-      // 特别检查 IpBlacklist 模型
-      const ipBlacklistModel = mongoose.models.IpBlacklist;
-      if (ipBlacklistModel) {
-        logger.info('找到 IpBlacklist 模型，正在创建索引...');
-        await ipBlacklistModel.createIndexes();
-        logger.info('IpBlacklist 索引创建完成');
-      } else {
-        logger.warn('未找到 IpBlacklist 模型，请检查模型定义');
-        
-        // 尝试直接加载 IpBlacklist 模型
-        try {
-          const IpBlacklistPath = path.join(__dirname, '../app/models/merchants/IpBlacklist.js');
-          if (fs.existsSync(IpBlacklistPath)) {
-            logger.info('尝试直接加载 IpBlacklist 模型...');
-            const IpBlacklistModel = require(IpBlacklistPath);
-            if (IpBlacklistModel) {
-              logger.info('IpBlacklist 模型加载成功');
-              if (typeof IpBlacklistModel.createIndexes === 'function') {
-                await IpBlacklistModel.createIndexes();
-                logger.info('IpBlacklist 索引创建完成');
-              }
-            }
-          }
-        } catch (error) {
-          logger.error('加载 IpBlacklist 模型失败:', error);
-        }
-      }
-      
       // 为所有模型创建索引
       for (const model of mongooseModels) {
         if (model.createIndexes) {
@@ -158,22 +173,72 @@ async function syncMongooseDatabase() {
       
       logger.info('MongoDB 数据库同步完成!');
     } catch (error) {
-      logger.error('MongoDB 数据库同步失败:', error);
+      // 详细记录错误信息
+      logger.error('MongoDB 数据库同步失败:', {
+        message: error.message,
+        stack: error.stack,
+        reason: error.reason ? error.reason.message : '未知原因'
+      });
+      
+      // 如果是连接错误，提供更多诊断信息
+      if (error.name === 'MongooseError' || error.name === 'MongoError') {
+        logger.error('MongoDB连接问题，请检查：');
+        logger.error('1. MongoDB服务是否运行');
+        logger.error('2. 连接URI是否正确');
+        logger.error('3. 网络连接是否正常');
+        logger.error('4. 认证信息是否正确');
+      }
+    } finally {
+      // 如果连接已建立，尝试断开连接
+      if (mongoose.connection.readyState !== 0) {
+        try {
+          await mongoose.disconnect();
+          logger.info('MongoDB连接已断开');
+        } catch (err) {
+          logger.error('断开MongoDB连接时出错:', err.message);
+        }
+      }
     }
   }
 }
 
 async function syncDatabase() {
+  let sqlSuccess = true;
+  let mongoSuccess = true;
+  
   try {
     // 同步 SQL 数据库
-    await syncSequelizeDatabase();
+    if (!mongoOnly) {
+      try {
+        await syncSequelizeDatabase();
+        logger.info('SQL 数据库同步成功');
+      } catch (error) {
+        sqlSuccess = false;
+        logger.error('SQL 数据库同步失败:', error);
+      }
+    }
     
     // 同步 MongoDB 数据库
-    await syncMongooseDatabase();
+    if (!sqlOnly) {
+      try {
+        await syncMongooseDatabase();
+        logger.info('MongoDB 数据库同步成功');
+      } catch (error) {
+        mongoSuccess = false;
+        logger.error('MongoDB 数据库同步失败:', error);
+      }
+    }
     
-    process.exit(0);
+    // 根据同步结果设置退出码
+    if ((mongoOnly && !mongoSuccess) || (sqlOnly && !sqlSuccess) || (!mongoOnly && !sqlOnly && !sqlSuccess && !mongoSuccess)) {
+      logger.error('数据库同步过程中发生错误');
+      process.exit(1);
+    } else {
+      logger.info('数据库同步完成');
+      process.exit(0);
+    }
   } catch (error) {
-    logger.error('数据库同步失败:', error);
+    logger.error('数据库同步过程中发生未处理的错误:', error);
     process.exit(1);
   }
 }

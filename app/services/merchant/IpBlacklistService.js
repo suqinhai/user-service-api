@@ -1,6 +1,6 @@
 const BaseService = require('../base/BaseService');
 const { IpBlacklistModel } = require('../../models');
-const mongoose = require('mongoose');
+const { Op } = require('sequelize');
 
 class IpBlacklistService extends BaseService {
   /**
@@ -12,7 +12,7 @@ class IpBlacklistService extends BaseService {
     const query = { merchantId };
     
     if (ip) {
-      query.ip = { $regex: ip, $options: 'i' };
+      query.ip = { [Op.like]: `%${ip}%` };
     }
     
     if (status !== undefined) {
@@ -23,21 +23,24 @@ class IpBlacklistService extends BaseService {
       query.restrictType = restrictType;
     }
     
-    const total = await IpBlacklistModel.countDocuments(query);
-    const list = await IpBlacklistModel.find(query)
-      .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .populate('operator', 'username name')
-      .lean();
+    const { count, rows } = await IpBlacklistModel.findAndCountAll({
+      where: query,
+      order: [['createdAt', 'DESC']],
+      offset: (page - 1) * limit,
+      limit: limit,
+      include: [{
+        association: 'operatorUser',
+        attributes: ['username', 'name']
+      }]
+    });
     
     return {
-      list,
+      list: rows,
       pagination: {
-        total,
+        total: count,
         page,
         limit,
-        pages: Math.ceil(total / limit)
+        pages: Math.ceil(count / limit)
       }
     };
   }
@@ -49,7 +52,10 @@ class IpBlacklistService extends BaseService {
    */
   async addIpToBlacklist({ merchantId, ip, remark, status, restrictType, relatedAccounts, operatorId }) {
     // 检查IP是否已存在
-    const existing = await IpBlacklistModel.findOne({ merchantId, ip });
+    const existing = await IpBlacklistModel.findOne({ 
+      where: { merchantId, ip }
+    });
+    
     if (existing) {
       throw new Error('该IP已在黑名单中');
     }
@@ -67,7 +73,7 @@ class IpBlacklistService extends BaseService {
       accountCount = accounts.length;
     }
     
-    const blacklistItem = new IpBlacklistModel({
+    const blacklistItem = await IpBlacklistModel.create({
       merchantId,
       ip,
       remark,
@@ -78,7 +84,6 @@ class IpBlacklistService extends BaseService {
       operator: operatorId
     });
     
-    await blacklistItem.save();
     return blacklistItem;
   }
 
@@ -89,12 +94,14 @@ class IpBlacklistService extends BaseService {
    * @returns {Promise<Object>} 删除结果
    */
   async removeIpsFromBlacklist(merchantId, ids) {
-    const result = await IpBlacklistModel.deleteMany({
-      merchantId,
-      _id: { $in: ids }
+    const result = await IpBlacklistModel.destroy({
+      where: {
+        merchantId,
+        id: { [Op.in]: ids }
+      }
     });
     
-    return { deletedCount: result.deletedCount };
+    return { deletedCount: result };
   }
 
   /**
@@ -108,9 +115,11 @@ class IpBlacklistService extends BaseService {
     if (ip !== undefined) {
       // 检查新IP是否与其他记录冲突
       const existing = await IpBlacklistModel.findOne({ 
-        merchantId, 
-        ip, 
-        _id: { $ne: id } 
+        where: { 
+          merchantId, 
+          ip, 
+          id: { [Op.ne]: id } 
+        }
       });
       
       if (existing) {
@@ -137,17 +146,21 @@ class IpBlacklistService extends BaseService {
     updateData.operator = operatorId;
     updateData.updatedAt = new Date();
     
-    const updated = await IpBlacklistModel.findOneAndUpdate(
-      { _id: id, merchantId },
-      { $set: updateData },
-      { new: true }
-    ).populate('operator', 'username name');
+    const [updated] = await IpBlacklistModel.update(updateData, {
+      where: { id, merchantId },
+      returning: true
+    });
     
     if (!updated) {
       throw new Error('记录不存在或无权限修改');
     }
     
-    return updated;
+    return await IpBlacklistModel.findByPk(id, {
+      include: [{
+        association: 'operatorUser',
+        attributes: ['username', 'name']
+      }]
+    });
   }
 
   /**
@@ -158,9 +171,9 @@ class IpBlacklistService extends BaseService {
    */
   async getRelatedAccounts(merchantId, id) {
     const blacklist = await IpBlacklistModel.findOne({ 
-      _id: id, 
-      merchantId 
-    }).select('relatedAccounts');
+      where: { id, merchantId },
+      attributes: ['relatedAccounts']
+    });
     
     if (!blacklist) {
       throw new Error('记录不存在或无权限查看');
@@ -178,17 +191,19 @@ class IpBlacklistService extends BaseService {
    */
   async addRelatedAccount(merchantId, id, account) {
     const blacklist = await IpBlacklistModel.findOne({ 
-      _id: id, 
-      merchantId 
+      where: { id, merchantId }
     });
     
     if (!blacklist) {
       throw new Error('记录不存在或无权限修改');
     }
     
+    // 获取当前关联账号
+    const relatedAccounts = blacklist.relatedAccounts || [];
+    
     // 检查账号是否已存在
-    const exists = blacklist.relatedAccounts.some(
-      a => a.userId.toString() === account.userId.toString()
+    const exists = relatedAccounts.some(
+      a => a.userId === account.userId
     );
     
     if (exists) {
@@ -202,17 +217,17 @@ class IpBlacklistService extends BaseService {
       addedAt: new Date()
     };
     
-    const updated = await IpBlacklistModel.findOneAndUpdate(
-      { _id: id, merchantId },
-      { 
-        $push: { relatedAccounts: newAccount },
-        $inc: { accountCount: 1 },
-        $set: { updatedAt: new Date() }
-      },
-      { new: true }
-    );
+    relatedAccounts.push(newAccount);
     
-    return updated;
+    const updated = await IpBlacklistModel.update({
+      relatedAccounts,
+      accountCount: relatedAccounts.length,
+      updatedAt: new Date()
+    }, {
+      where: { id, merchantId }
+    });
+    
+    return await IpBlacklistModel.findByPk(id);
   }
 
   /**
@@ -223,24 +238,31 @@ class IpBlacklistService extends BaseService {
    * @returns {Promise<Object>} 更新后的记录
    */
   async removeRelatedAccount(merchantId, id, accountId) {
-    const updated = await IpBlacklistModel.findOneAndUpdate(
-      { _id: id, merchantId },
-      { 
-        $pull: { relatedAccounts: { _id: accountId } },
-        $inc: { accountCount: -1 },
-        $set: { updatedAt: new Date() }
-      },
-      { new: true }
-    );
+    const blacklist = await IpBlacklistModel.findOne({ 
+      where: { id, merchantId }
+    });
     
-    if (!updated) {
+    if (!blacklist) {
       throw new Error('记录不存在或无权限修改');
     }
     
-    return updated;
+    // 获取当前关联账号并过滤掉要删除的账号
+    const relatedAccounts = (blacklist.relatedAccounts || [])
+      .filter(account => account.userId !== accountId);
+    
+    await IpBlacklistModel.update({
+      relatedAccounts,
+      accountCount: relatedAccounts.length,
+      updatedAt: new Date()
+    }, {
+      where: { id, merchantId }
+    });
+    
+    return await IpBlacklistModel.findByPk(id);
   }
 }
 
 module.exports = IpBlacklistService;
+
 
 

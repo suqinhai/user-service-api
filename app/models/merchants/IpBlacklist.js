@@ -1,87 +1,86 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+const { DataTypes } = require('sequelize');
 
 /**
  * IP黑名单模型
  */
-const IpBlacklistSchema = new Schema({
-  // 所属商户ID
-  merchantId: {
-    type: Schema.Types.ObjectId,
-    ref: 'Merchant',
-    required: true,
-    index: true
-  },
-  
-  // IP地址
-  ip: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  
-  // 限制类型: 1-登录限制, 2-注册限制, 3-全部限制
-  restrictType: {
-    type: Number,
-    default: 3,
-    enum: [1, 2, 3],
-    required: true
-  },
-  
-  // 关联账号列表
-  relatedAccounts: [{
-    userId: {
-      type: Schema.Types.ObjectId,
-      ref: 'MerchantsUsers'
+module.exports = (sequelize) => {
+  const IpBlacklist = sequelize.define('IpBlacklist', {
+    // 主键ID
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true
     },
-    username: String,
-    addedAt: {
-      type: Date,
-      default: Date.now
+    
+    // 所属商户ID
+    merchantId: {
+      type: DataTypes.STRING(24),
+      allowNull: false
+    },
+    
+    // IP地址
+    ip: {
+      type: DataTypes.STRING(50),
+      allowNull: false
+    },
+    
+    // 限制类型: 1-登录限制, 2-注册限制, 3-全部限制
+    restrictType: {
+      type: DataTypes.INTEGER,
+      defaultValue: 3,
+      allowNull: false,
+      validate: {
+        isIn: [[1, 2, 3]]
+      }
+    },
+    
+    // 关联账号列表 (JSON格式存储)
+    relatedAccounts: {
+      type: DataTypes.JSON,
+      defaultValue: []
+    },
+    
+    // 关联账号数量
+    accountCount: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0
+    },
+    
+    // 备注说明
+    remark: {
+      type: DataTypes.TEXT,
+      defaultValue: ''
+    },
+    
+    // 状态: 1-启用, 0-禁用
+    status: {
+      type: DataTypes.INTEGER,
+      defaultValue: 1,
+      validate: {
+        isIn: [[0, 1]]
+      }
+    },
+    
+    // 操作人ID - 不使用外键约束，避免同步问题
+    operator: {
+      type: DataTypes.STRING(24),
+      allowNull: false
     }
-  }],
-  
-  // 关联账号数量
-  accountCount: {
-    type: Number,
-    default: 0
-  },
-  
-  // 备注说明
-  remark: {
-    type: String,
-    default: ''
-  },
-  
-  // 状态: 1-启用, 0-禁用
-  status: {
-    type: Number,
-    default: 1,
-    enum: [0, 1]
-  },
-  
-  // 操作人
-  operator: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  
-  // 创建时间
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  
-  // 更新时间
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  }
-});
+  }, {
+    tableName: 'ip_blacklist',
+    timestamps: true,
+    indexes: [
+      // 创建复合唯一索引
+      {
+        unique: true,
+        fields: ['merchantId', 'ip']
+      },
+      // 为操作人创建索引
+      {
+        fields: ['operator']
+      }
+    ]
+  });
 
-// 创建复合索引
-IpBlacklistSchema.index({ merchantId: 1, ip: 1 }, { unique: true });
-
-module.exports = mongoose.model('IpBlacklist', IpBlacklistSchema);
-
+  return IpBlacklist;
+};
